@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { GameScreen } from './components/GameScreen';
-import { GameOverModal } from './components/GameOverModal';
 import { VictoryModal } from './components/VictoryModal';
-import type { Question } from './data/questions';
+import { QUESTIONS, type Question } from './data/questions';
 import { gameAudio } from './utils/audio';
 
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
@@ -21,7 +20,7 @@ function App() {
   // Session State
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const [, setAnswersList] = useState<any[]>([]);
+  const [answersList, setAnswersList] = useState<any[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [victoryData, setVictoryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +32,18 @@ function App() {
         const lessonId = urlParams.get('lessonId');
         const token = urlParams.get('token');
 
+        const isDevelopment = import.meta.env.MODE === 'development';
+
         if (!lessonId || !token) {
+          if (isDevelopment) {
+            console.warn('Development mode: Missing URL parameters. Using mock evaluationId ("dev-evaluation") and accessCode ("dev-test"). Skipping API fetch and using local mock questions.');
+            
+            // Provide realistic test data so the game can open normally
+            setApiQuestions(QUESTIONS);
+            setIsLoading(false);
+            return;
+          }
+          
           setError('عذراً، الرابط غير مكتمل. يرجى التأكد من وجود رقم التقييم ورمز المرور.');
           setIsLoading(false);
           return;
@@ -263,7 +273,9 @@ function App() {
       const nextLives = prev - 1;
       if (nextLives <= 0) {
         gameAudio.playGameOver();
-        setView('gameover');
+        // The game is completely finished, show the ONLY final results screen
+        submitGameSession(answersList);
+        setView('victory');
       }
       return nextLives;
     });
@@ -309,18 +321,13 @@ function App() {
         />
       )}
 
-      {view === 'gameover' && (
-        <GameOverModal
-          score={score}
-          level={currentQuestionIndex + 1}
-          onRestart={handleStartGame}
-          onHome={() => setView('welcome')}
-        />
-      )}
 
       {view === 'victory' && (
         <VictoryModal
           score={score}
+          totalQuestions={apiQuestions.length}
+          correctAnswers={answersList.filter(a => a.isCorrect).length}
+          wrongAnswers={answersList.filter(a => !a.isCorrect).length}
           isSubmitting={isSubmitting}
           victoryData={victoryData}
           onRestart={handleStartGame}
