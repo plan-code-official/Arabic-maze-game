@@ -4,7 +4,7 @@ import { GameScreen } from './components/GameScreen';
 import { VictoryModal } from './components/VictoryModal';
 import { QUESTIONS, type Question } from './data/questions';
 import { gameAudio } from './utils/audio';
-
+ 
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
 
 function App() {
