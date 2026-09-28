@@ -471,13 +471,19 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
 
 
-  const isWalkable = (gx: number, gy: number): boolean => {
+  const isWalkable = (gx: number, gy: number, isMonster: boolean = false): boolean => {
     if (gx < 0 || gx >= 19 || gy < 0 || gy >= 19) return false;
 
-    // Check if inside a caged room (3x3 area + portal entrance)
-    for (const room of cagedRooms) {
-      if (Math.abs(gx - room.x) <= 1 && Math.abs(gy - room.y) <= 1) return false;
-
+    if (isMonster) {
+      // Monsters cannot enter any room
+      for (const room of ROOMS) {
+        if (Math.abs(gx - room.x) <= 1 && Math.abs(gy - room.y) <= 1) return false;
+      }
+    } else {
+      // Player cannot enter caged rooms
+      for (const room of cagedRooms) {
+        if (Math.abs(gx - room.x) <= 1 && Math.abs(gy - room.y) <= 1) return false;
+      }
     }
 
 
@@ -659,7 +665,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           const bfsResult = bfsFirstStep(
             monster.gridX, monster.gridY,
             goalCell.x, goalCell.y,
-            isWalkable
+            (x, y) => isWalkable(x, y, true)
           );
 
           if (bfsResult) {
@@ -681,7 +687,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
               ];
               const alternatives = dirs.filter(d =>
                 d.dir !== opposites[monster.lastDir] &&
-                isWalkable(monster.gridX + d.dx, monster.gridY + d.dy)
+                isWalkable(monster.gridX + d.dx, monster.gridY + d.dy, true)
               );
 
               if (alternatives.length > 0) {
@@ -748,8 +754,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
       // 4. Room Detection (Player inside corner rooms)
       activeRooms.forEach((room) => {
-        // If player reaches the exact center tile of the room
-        if (player.gridX === room.x && player.gridY === room.y) {
+        // If player enters any tile within the 3x3 room
+        if (Math.abs(player.gridX - room.x) <= 1 && Math.abs(player.gridY - room.y) <= 1) {
           const now = Date.now();
           const lastVisited = lastRoomVisitedRef.current;
 
@@ -1045,10 +1051,46 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     };
   }, [isPaused, lives, words, correctWord]);
 
+  const pointerStartRef = useRef<{ x: number, y: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.isPrimary) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.isPrimary || !pointerStartRef.current) return;
+    
+    const dx = e.clientX - pointerStartRef.current.x;
+    const dy = e.clientY - pointerStartRef.current.y;
+    
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        activeDPadDirRef.current = dx > 0 ? 'right' : 'left';
+      } else {
+        activeDPadDirRef.current = dy > 0 ? 'down' : 'up';
+      }
+      pointerStartRef.current = { x: e.clientX, y: e.clientY };
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.isPrimary) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    pointerStartRef.current = null;
+    activeDPadDirRef.current = null;
+  };
+
   return (
     <div
       ref={containerRef}
-      className="relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none w-full h-auto lg:w-auto lg:h-full aspect-square max-w-full max-h-full"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      style={{ touchAction: 'none' }}
+      className="relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none w-full h-auto lg:w-auto lg:h-full aspect-square max-w-full max-h-full cursor-crosshair"
     >
       <canvas
         ref={canvasRef}
@@ -1057,59 +1099,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         className="block max-w-full max-h-full h-auto"
         style={{ imageRendering: 'pixelated' }}
       />
-      {/* D-Pad overlay - Positioned in the bottom right corner for better mobile ergonomics */}
-      <div className="absolute bottom-8 right-8 sm:bottom-12 sm:right-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85 md:hidden">
-        {/* Up Button */}
-        <button
-          className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
-          onTouchStart={(e) => { e.preventDefault(); handleDPadStart('up'); }}
-          onTouchEnd={handleDPadEnd}
-          onMouseDown={(e) => { e.preventDefault(); handleDPadStart('up'); }}
-          onMouseUp={handleDPadEnd}
-          onMouseLeave={handleDPadEnd}
-        >
-          <ArrowUp className="w-10 h-10 text-white drop-shadow-md" />
-        </button>
-
-        {/* Middle Row (Adjusted for RTL layout so left is left and right is right visually) */}
-        <div className="w-full flex flex-row justify-between">
-          {/* Right Button (First in DOM = Right side in RTL) */}
-          <button
-            className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
-            onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
-            onTouchEnd={handleDPadEnd}
-            onMouseDown={(e) => { e.preventDefault(); handleDPadStart('right'); }}
-            onMouseUp={handleDPadEnd}
-            onMouseLeave={handleDPadEnd}
-          >
-            <ArrowRight className="w-10 h-10 text-white drop-shadow-md" />
-          </button>
-
-          {/* Left Button (Second in DOM = Left side in RTL) */}
-          <button
-            className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
-            onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
-            onTouchEnd={handleDPadEnd}
-            onMouseDown={(e) => { e.preventDefault(); handleDPadStart('left'); }}
-            onMouseUp={handleDPadEnd}
-            onMouseLeave={handleDPadEnd}
-          >
-            <ArrowLeft className="w-10 h-10 text-white drop-shadow-md" />
-          </button>
-        </div>
-
-        {/* Down Button */}
-        <button
-          className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
-          onTouchStart={(e) => { e.preventDefault(); handleDPadStart('down'); }}
-          onTouchEnd={handleDPadEnd}
-          onMouseDown={(e) => { e.preventDefault(); handleDPadStart('down'); }}
-          onMouseUp={handleDPadEnd}
-          onMouseLeave={handleDPadEnd}
-        >
-          <ArrowDown className="w-10 h-10 text-white drop-shadow-md" />
-        </button>
-      </div>
     </div>
   );
 };

@@ -81,11 +81,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   const handleWrong = (word: string) => {
     onWrongAnswer(word);
-    triggerNotification(`❌ كلمة "${word}" خاطئة! `, 'error');
+    triggerNotification('خطأ', 'error');
   };
 
   const handleCorrect = () => {
-    triggerNotification('⭐ إجابة صحيحة! أحسنت!', 'success');
+    triggerNotification('أحسنت', 'success');
     onCorrectAnswer();
   };
 
@@ -210,10 +210,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Toast Notification overlay */}
           {notification && (
             <div
-              className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${notification.type === 'success'
-                ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
-                : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
-                }`}
+              className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-16 py-10 rounded-[3rem] font-black shadow-2xl transition-all duration-300 z-[100] text-7xl md:text-9xl tracking-wider pointer-events-none text-center flex items-center justify-center min-w-[300px] ${
+                notification.type === 'success'
+                  ? 'bg-black/70 text-[#63FF5D]'
+                  : 'bg-black/70 text-[#FF5D5C]'
+              }`}
+              dir="rtl"
             >
               {notification.text}
             </div>
