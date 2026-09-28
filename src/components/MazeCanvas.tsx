@@ -140,6 +140,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: 1.8 });
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
   const frameCountRef = useRef(0);
+  const lowPowerDeviceRef = useRef(false);
+
+  useEffect(() => {
+    lowPowerDeviceRef.current = window.matchMedia(
+      '(pointer: coarse), (max-width: 768px), (prefers-reduced-motion: reduce)'
+    ).matches;
+  }, []);
 
   // BFS pathfinding — returns the first direction to move toward target
   const bfsFirstStep = (
@@ -815,12 +822,55 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       }
 
       // 2.5 Draw Warp Portals
+      // Portal effects are intentionally kept lightweight on touch/mobile devices.
+      // The old version created multiple gradients, shadow blurs, and 80 path points
+      // for every portal on every animation frame, which caused a noticeable frame
+      // drop when a portal entered the camera viewport.
       const now = Date.now();
+      const visibleWorldWidth = canvas.width / (2 * zoom);
+      const visibleWorldHeight = canvas.height / (2 * zoom);
+      const halfVisibleWidth = visibleWorldWidth / 2;
+      const halfVisibleHeight = visibleWorldHeight / 2;
+      const isLowPowerDevice = lowPowerDeviceRef.current;
+
       WARP_PORTALS.forEach((portal) => {
         const px = portal.x * cellSize + cellSize / 2;
         const py = portal.y * cellSize + cellSize / 2;
+
+        // Avoid doing any portal animation work while it is outside the camera.
+        if (
+          Math.abs(px - cameraRef.current.x) > halfVisibleWidth + cellSize ||
+          Math.abs(py - cameraRef.current.y) > halfVisibleHeight + cellSize
+        ) {
+          return;
+        }
+
         const baseAngle = (now / 600) % (Math.PI * 2);
         const radius = cellSize / 2;
+
+        if (isLowPowerDevice) {
+          // A single rotating arc preserves the portal cue without the expensive
+          // gradients and shadowBlur operations that are costly on mobile GPUs.
+          ctx.save();
+          ctx.fillStyle = '#050a1f';
+          ctx.beginPath();
+          ctx.arc(px, py, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = portal.color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(px, py, radius - 1, baseAngle, baseAngle + Math.PI * 1.35);
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.65;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(px, py, radius + 2, baseAngle + Math.PI, baseAngle + Math.PI * 1.75);
+          ctx.stroke();
+          ctx.restore();
+          return;
+        }
 
         ctx.save();
         ctx.beginPath();
