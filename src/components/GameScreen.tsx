@@ -38,6 +38,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   useEffect(() => {
+    document.documentElement.classList.add('game-active');
+    document.body.classList.add('game-active');
+
+    return () => {
+      document.documentElement.classList.remove('game-active');
+      document.body.classList.remove('game-active');
+    };
+  }, []);
+
+  useEffect(() => {
     if (currentQuestion?.audioUrl) {
       const timer = setTimeout(() => {
         if (audioRef.current) {
@@ -106,10 +116,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-start gap-4 lg:gap-8 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
+    <div className="game-screen w-full max-w-[1440px] mx-auto p-3 sm:p-5 lg:p-7 flex flex-col items-center justify-start gap-3 lg:gap-5">
 
       {/* 1. Header panel */}
-      <div className="glass-panel w-full flex items-center justify-between px-[32px] py-[24px] relative z-10">
+      <div className="game-header glass-panel w-full flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 relative z-10">
         <button
           onClick={onBackToWelcome}
           className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
@@ -119,7 +129,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </button>
 
         {/* HUD Info */}
-        <div className="flex items-center gap-6">
+        <div className="game-hud flex items-center gap-3 sm:gap-6">
           {/* Level */}
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">المرحلة</span>
@@ -141,42 +151,34 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </div>
 
       {/* 2. Main layout */}
-      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-12 pb-6">
+      <div className="game-main flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-4 lg:gap-8 pb-2">
 
         {/* Left Side (Actually Right in RTL): Question Display */}
-        <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
+        <div className="question-panel glass-panel w-full lg:w-[320px] p-3 sm:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Text and/or Image */}
           {currentQuestion && (
-            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2">
-              {currentQuestion.image ? (
-                <>
-                  <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4 relative z-10">
-                    <img
-                      src={currentQuestion.image}
-                      alt="سؤال المتاهة"
-                      className="max-w-full max-h-full object-contain drop-shadow-lg"
-                    />
-                  </div>
-                  <div className="text-xl lg:text-3xl text-white font-black text-center leading-relaxed shrink-0 bg-slate-900/60 p-4 rounded-xl border border-white/10 w-full relative z-10 shadow-lg">
-                    {currentQuestion.questionText}
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full w-full relative">
-                  {/* Decorative faint icon */}
-                  <Target className="absolute w-64 h-64 text-[#00f0ff] opacity-5 filter blur-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <div className="question-content relative z-10 w-full h-full flex flex-col items-center justify-center gap-2 sm:gap-3">
+              <Target className="question-decoration absolute text-[#00f0ff] opacity-5 filter blur-sm" aria-hidden="true" />
 
-                  <div className="text-3xl lg:text-5xl text-white font-black text-center leading-relaxed p-8 bg-slate-800/50 rounded-3xl border border-white/20 shadow-xl relative z-10 w-full animate-float">
-                    <span className="text-white drop-shadow-lg">
-                      {currentQuestion.questionText}
-                    </span>
-                  </div>
+              {currentQuestion.image && (
+                <div className="question-image-wrap w-full min-h-0 flex items-center justify-center relative z-10">
+                  <img
+                    src={currentQuestion.image}
+                    alt="صورة السؤال"
+                    className="question-image max-w-full max-h-full object-contain drop-shadow-lg"
+                  />
+                </div>
+              )}
+
+              {currentQuestion.questionText && (
+                <div className="question-text text-xl sm:text-2xl lg:text-3xl text-white font-black text-center leading-relaxed shrink-0 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-white/10 w-full relative z-10 shadow-lg">
+                  {currentQuestion.questionText}
                 </div>
               )}
 
               {/* Optional Audio */}
               {currentQuestion.audioUrl && (
-                <div className="w-full shrink-0 flex items-center justify-center mt-3 lg:mt-5">
+                <div className="question-audio w-full shrink-0 flex items-center justify-center">
                   <audio
                     ref={audioRef}
                     src={currentQuestion.audioUrl}
@@ -188,14 +190,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   <button
                     onClick={toggleAudio}
                     style={{ background: 'transparent', border: 'none', outline: 'none' }}
+                    aria-label={isPlayingAudio ? 'إيقاف الصوت' : 'تشغيل الصوت'}
                     className={`appearance-none bg-transparent border-none outline-none focus:outline-none shadow-none transition-all duration-300 transform active:scale-90 hover:scale-110 ${isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
                       }`}
                   >
                     <div className={`filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
                       {isPlayingAudio ? (
-                        <Music className="w-24 h-24 lg:w-40 lg:h-40" />
+                        <Music className="w-14 h-14 sm:w-20 sm:h-20 lg:w-28 lg:h-28" />
                       ) : (
-                        <Volume2 className="w-24 h-24 lg:w-40 lg:h-40" />
+                        <Volume2 className="w-14 h-14 sm:w-20 sm:h-20 lg:w-28 lg:h-28" />
                       )}
                     </div>
                   </button>
@@ -206,7 +209,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Center: Maze Board */}
-        <div className="relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0 flex-shrink-0">
+        <div className="maze-column relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0 flex-shrink-0">
           {/* Toast Notification overlay */}
           {notification && (
             <div

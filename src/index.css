@@ -61,6 +61,153 @@ body {
   align-items: center;
 }
 
+/* The play screen is a contained app surface. Keep the document from scrolling
+   while allowing the question card and maze to share the available viewport. */
+html.game-active,
+body.game-active {
+  height: 100%;
+  overflow: hidden;
+}
+
+body.game-active #root {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-screen {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.game-header {
+  flex: 0 0 auto;
+}
+
+.game-main {
+  min-height: 0;
+}
+
+.question-panel {
+  min-height: 0;
+}
+
+.question-content {
+  min-height: 0;
+}
+
+.question-decoration {
+  width: 70%;
+  height: 70%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.question-image-wrap {
+  flex: 1 1 0;
+}
+
+.question-image {
+  width: auto;
+  height: auto;
+  max-height: 100%;
+}
+
+.question-text {
+  max-height: 34%;
+  overflow: hidden;
+}
+
+.question-audio svg {
+  max-width: 18vw;
+  max-height: 12vh;
+}
+
+.maze-column {
+  min-height: 0;
+}
+
+@media (max-width: 1023px) {
+  .game-screen {
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    gap: 8px;
+  }
+
+  .game-header {
+    min-height: 54px;
+    border-radius: 16px;
+  }
+
+  .game-header button {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .game-hud {
+    gap: 10px;
+  }
+
+  .game-hud > div {
+    gap: 0;
+  }
+
+  .game-hud span:first-child {
+    font-size: 0.6rem;
+  }
+
+  .game-hud span:last-child {
+    font-size: 0.95rem;
+  }
+
+  .game-main {
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 0;
+  }
+
+  .question-panel {
+    flex: 0 0 clamp(145px, 28dvh, 245px);
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .question-image-wrap {
+    min-height: 0;
+  }
+
+  .question-text {
+    max-height: 35%;
+    font-size: clamp(1.05rem, 4.5vw, 1.55rem);
+    line-height: 1.35;
+  }
+
+  .question-audio svg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .maze-column {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .game-hud {
+    gap: 6px;
+  }
+
+  .game-hud > div:nth-child(1) {
+    display: none;
+  }
+
+  .question-panel {
+    flex-basis: clamp(135px, 25dvh, 205px);
+  }
+}
+
 /* Glassmorphism Classes */
 .glass-panel {
   background: var(--bg-card);
