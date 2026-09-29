@@ -4,7 +4,8 @@ import celebrationTitle from './assets/good.png';
 import coinsImage from './assets/money.png';
 import correctImage from './assets/right.png';
 import wrongImage from './assets/wrong.png';
-import buttonFrame from './assets/boutton.png';
+import exitButtonImage from '../assets/Exit.png';
+import retryButtonImage from '../assets/Retry.png';
 
 const numberValue = (value) => {
   const parsed = Number(value);
@@ -21,22 +22,23 @@ export default function ResultsPanel({
   onRetry,
   onBack,
 }) {
-  const finalScore = numberValue(score);
-  const maximumScore = numberValue(totalScore) || 100;
   const correct = numberValue(correctAnswers);
   const wrong = numberValue(wrongAnswers);
   const earnedCoins = numberValue(coins);
+  const totalAnswers = correct + wrong;
+  const isSuccess = totalAnswers > 0 && correct / totalAnswers >= 0.5;
 
   return (
     <div className="results-overlay">
       <section className="results-screen" aria-label="نتائج اللعبة" dir="rtl">
         <div className="results-panel" style={{ '--results-panel-image': `url(${panelFrame})` }}>
+          <img className="results-panel__frame" src={panelFrame} alt="" aria-hidden="true" />
           <div className="results-panel__content">
-            <img className="results-panel__title" src={celebrationTitle} alt="أحسنت" />
-            <div className="results-score-card">
-              <span className="results-score-card__label">{'\u0627\u0644\u062f\u0651\u064e\u0631\u064e\u062c\u064e\u0629\u064f'}</span>
-              <strong>{finalScore}/{maximumScore}</strong>
-            </div>
+            {isSuccess ? (
+              <img className="results-panel__title" src={celebrationTitle} alt="أحسنت" />
+            ) : (
+              <div className="results-panel__fail-title">حاول مرة أخرى!</div>
+            )}
             <div className="results-stats" aria-label="إحصاءات الأداء">
               <div className="results-stat-card results-stat-card--correct">
                 <img src={correctImage} alt="إجابات صحيحة" />
@@ -56,16 +58,10 @@ export default function ResultsPanel({
         </div>
         <div className="results-actions">
           <button className="results-action results-action--back" type="button" onClick={onBack}>
-            <img src={buttonFrame} alt="" aria-hidden="true" />
-            <span className="results-action__group">
-              <span>{'\u0627\u0631\u0652\u062c\u0650\u0639\u0652'}</span>
-              <span className="results-action__exit-icon" aria-hidden="true">⎋</span>
-            </span>
+            <img className="results-action__bg" src={exitButtonImage} alt="خروج" />
           </button>
           <button className="results-action results-action--retry" type="button" onClick={onRetry}>
-            <img src={buttonFrame} alt="" aria-hidden="true" />
-            <span aria-hidden="true">↻</span>
-            <span>{'\u062b\u0627\u0646\u0650\u064a\u064e\u0629\u064b'}</span>
+            <img className="results-action__bg" src={retryButtonImage} alt="إعادة المحاولة" />
           </button>
         </div>
       </section>

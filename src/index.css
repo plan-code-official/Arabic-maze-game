@@ -114,6 +114,10 @@ body.game-active #root {
   height: auto;
   max-height: 100%;
 }
+.question-image-modal { position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(0,8,20,.86); backdrop-filter:blur(8px); }
+.question-image-modal__content { position:relative; width:min(92vw,900px); height:min(88vh,700px); display:flex; align-items:center; justify-content:center; padding:20px; border-radius:24px; background:rgba(8,30,50,.96); border:2px solid rgba(0,240,255,.45); }
+.question-image-modal__content img { max-width:100%; max-height:100%; object-fit:contain; border-radius:16px; }
+.question-image-modal__close { position:absolute; top:8px; right:10px; z-index:1; width:38px; height:38px; border:0; border-radius:50%; color:#fff; background:#ef4444; font-size:28px; line-height:1; cursor:pointer; }
 
 .question-text {
   max-height: 34%;
@@ -569,3 +573,12 @@ body.game-active #root {
     max-height: 45vh;
   }
 }
+ .answer-feedback-card { display:inline-flex; align-items:center; justify-content:center; gap:12px; min-width:clamp(220px,42vw,360px); padding:clamp(16px,2.6vh,26px) clamp(24px,4vw,48px); border:2px solid; border-radius:24px; background:linear-gradient(180deg,rgba(8,48,70,.96),rgba(5,30,48,.94)); box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 0 18px rgba(0,196,230,.16); font-family:'Cairo',sans-serif; font-size:clamp(1.65rem,min(4.8vw,5.5vh),3rem); font-weight:900; line-height:1; white-space:nowrap; animation:answerFeedbackPop .22s cubic-bezier(.2,.86,.3,1) both; }
+.answer-feedback-card--inline { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100; }
+.answer-feedback-card--success { color:#38ef7d; border-color:#38ef7d; text-shadow:0 0 16px rgba(56,239,125,.55); }
+.answer-feedback-card--wrong { color:#ff5d5c; border-color:#ff5d5c; text-shadow:0 0 16px rgba(255,93,92,.55); }
+.answer-feedback__icon { width:1.15em; height:1.15em; flex:0 0 auto; }
+.answer-feedback__text { display:inline-block; }
+.answer-feedback-card { direction: ltr; flex-direction: row; }
+.answer-feedback__text { direction: rtl; }
+@keyframes answerFeedbackPop { from { opacity:0; transform:scale(.88) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
