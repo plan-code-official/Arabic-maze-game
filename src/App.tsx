@@ -7,6 +7,23 @@ import { gameAudio } from './utils/audio';
  
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
 
+function normalizeOptionArray(value: unknown): any[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      return normalizeOptionArray(JSON.parse(value));
+    } catch {
+      return [];
+    }
+  }
+  if (value && typeof value === 'object') {
+    const option = value as Record<string, unknown>;
+    if ('text' in option || 'imageUrl' in option || 'audioUrl' in option) return [option];
+    return Object.values(option);
+  }
+  return [];
+}
+
 function App() {
   const [view, setView] = useState<ViewType>('welcome');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -110,24 +127,16 @@ function App() {
 
             if (isOptionsFormat) {
               questionText = q.question || 'بدون سؤال';
-              try {
-                choicesArr = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
-              } catch (e) {
-                choicesArr = [];
-              }
+              choicesArr = normalizeOptionArray(q.options);
               word = q.correctAnswer || 'إجابة';
-              image = q.imageUrl || q.image || null;
-              audio = q.audioUrl || null;
+              image = q.imageUrl || q.image || choicesArr.find((option: any) => option?.imageUrl)?.imageUrl || null;
+              audio = q.audioUrl || choicesArr.find((option: any) => option?.audioUrl)?.audioUrl || null;
 
               const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
               distractors = mappedChoices.filter((t: string) => t !== word);
             } else if (isAnswerFormat) {
               questionText = q.questionTitle || 'بدون سؤال';
-              try {
-                choicesArr = typeof q.choices === 'string' ? JSON.parse(q.choices) : (q.choices || []);
-              } catch (e) {
-                choicesArr = [];
-              }
+              choicesArr = normalizeOptionArray(q.choices);
               word = q.correctAnswer || 'إجابة';
               image = q.image || null;
 
@@ -136,7 +145,7 @@ function App() {
             } else if (hasChoiceDetails) {
               const details = q.choiceDetails || {};
               questionText = details.title || 'بدون سؤال';
-              choicesArr = details.choices || [];
+              choicesArr = normalizeOptionArray(details.choices);
               image = details.image || null;
 
               const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
@@ -292,7 +301,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="w-screen min-h-screen bg-slate-900 flex items-center justify-center text-white text-2xl font-bold" dir="rtl">
-        جاري تحميل اللعبة...
+        تحميل
       </div>
     );
   }

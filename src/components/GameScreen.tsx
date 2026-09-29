@@ -36,6 +36,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.add('game-active');
@@ -165,7 +166,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   <img
                     src={currentQuestion.image}
                     alt="صورة السؤال"
-                    className="question-image max-w-full max-h-full object-contain drop-shadow-lg"
+                    className="question-image max-w-full max-h-full object-contain drop-shadow-lg cursor-zoom-in"
+                    onClick={() => setZoomedImage(currentQuestion.image)}
                   />
                 </div>
               )}
@@ -212,15 +214,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         <div className="maze-column relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0 flex-shrink-0">
           {/* Toast Notification overlay */}
           {notification && (
-            <div
-              className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-16 py-10 rounded-[3rem] font-black shadow-2xl transition-all duration-300 z-[100] text-7xl md:text-9xl tracking-wider pointer-events-none text-center flex items-center justify-center min-w-[300px] ${
-                notification.type === 'success'
-                  ? 'bg-black/70 text-[#63FF5D]'
-                  : 'bg-black/70 text-[#FF5D5C]'
-              }`}
-              dir="rtl"
-            >
-              {notification.text}
+            <div className={`answer-feedback-card answer-feedback-card--inline ${notification.type === 'success' ? 'answer-feedback-card--success' : 'answer-feedback-card--wrong'}`} dir="rtl">
+              <svg className="answer-feedback__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {notification.type === 'success' ? <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></> : <><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m0-6-6 6" /></>}
+              </svg><span className="answer-feedback__text">{notification.text}</span>
             </div>
           )}
 
@@ -238,6 +235,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
       </div>
+
+      {zoomedImage && (
+        <div className="question-image-modal" role="dialog" aria-modal="true" onClick={() => setZoomedImage(null)}>
+          <div className="question-image-modal__content" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className="question-image-modal__close" onClick={() => setZoomedImage(null)} aria-label="إغلاق الصورة">×</button>
+            <img src={zoomedImage} alt="صورة السؤال مكبرة" />
+          </div>
+        </div>
+      )}
 
     </div>
   );

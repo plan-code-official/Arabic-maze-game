@@ -28,7 +28,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     onStart();
   };
 
-  const xpCount = totalQuestions * 10;
+  const xpCount = totalQuestions * 1;
   const isReady = totalQuestions > 0 && !error;
 
   return (
