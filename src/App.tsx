@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { GameScreen } from './components/GameScreen';
 import { VictoryModal } from './components/VictoryModal';
@@ -38,6 +38,7 @@ function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [answersList, setAnswersList] = useState<any[]>([]);
+  const answersRef = useRef<any[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [victoryData, setVictoryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -186,6 +187,7 @@ function App() {
     setLives(3);
     setCurrentQuestionIndex(0);
     setAnswersList([]);
+    answersRef.current = [];
     setVictoryData(null);
     setQuestionStartTime(Date.now());
     setView('playing');
@@ -246,18 +248,16 @@ function App() {
       pointsEarned: 10
     };
 
-    setAnswersList(prev => {
-      const newAnswers = [...prev, answerRecord];
+    const newAnswers = [...answersRef.current, answerRecord];
+    answersRef.current = newAnswers;
+    setAnswersList(newAnswers);
 
-      // Check if there are more questions
-      if (currentQuestionIndex + 1 < apiQuestions.length) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setQuestionStartTime(Date.now());
-      } else {
-        submitGameSession(newAnswers);
-      }
-      return newAnswers;
-    });
+    if (currentQuestionIndex + 1 < apiQuestions.length) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setQuestionStartTime(Date.now());
+    } else {
+      submitGameSession(newAnswers);
+    }
 
     setScore((prev) => prev + 10);
   };
@@ -266,13 +266,16 @@ function App() {
     const timeTaken = Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000));
     const currentQ = apiQuestions[currentQuestionIndex];
 
-    setAnswersList(prev => [...prev, {
+    const answerRecord = {
       questionId: currentQ.id,
       selectedAnswer: wrongWord,
       isCorrect: false,
       timeTaken: timeTaken,
       pointsEarned: 0
-    }]);
+    };
+    const newAnswers = [...answersRef.current, answerRecord];
+    answersRef.current = newAnswers;
+    setAnswersList(newAnswers);
 
     setScore((prev) => Math.max(0, prev - 5));
   };
@@ -283,7 +286,7 @@ function App() {
       if (nextLives <= 0) {
         gameAudio.playGameOver();
         // The game is completely finished, show the ONLY final results screen
-        submitGameSession(answersList);
+        submitGameSession(answersRef.current);
         setView('victory');
       }
       return nextLives;
@@ -321,7 +324,7 @@ function App() {
         <GameScreen
           questions={apiQuestions}
           currentQuestionIndex={currentQuestionIndex}
-          score={score}
+          coins={answersList.filter((answer) => answer.isCorrect).length}
           lives={lives}
           onCorrectAnswer={handleCorrectAnswer}
           onWrongAnswer={handleWrongAnswer}
@@ -337,7 +340,6 @@ function App() {
           totalQuestions={apiQuestions.length}
           correctAnswers={answersList.filter(a => a.isCorrect).length}
           wrongAnswers={answersList.filter(a => !a.isCorrect).length}
-          isSubmitting={isSubmitting}
           victoryData={victoryData}
           onRestart={handleStartGame}
           onHome={() => setView('welcome')}

@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, ArrowLeft, Volume2, Music, Target } from 'lucide-react';
+import { Volume2, Music, Target } from 'lucide-react';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
+import ExitButton from '../assets/ExitButton.svg';
+import coinImage from '../assets/daddcoin.webp';
+import heartImage from '../assets/heart.png';
 
 interface GameScreenProps {
   questions: Question[];
   currentQuestionIndex: number;
-  score: number;
+  coins: number;
   lives: number;
   onCorrectAnswer: () => void;
   onWrongAnswer: (word: string) => void;
@@ -17,7 +20,7 @@ interface GameScreenProps {
 export const GameScreen: React.FC<GameScreenProps> = ({
   questions,
   currentQuestionIndex,
-  score,
+  coins,
   lives,
   onCorrectAnswer,
   onWrongAnswer,
@@ -92,6 +95,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   const handleWrong = (word: string) => {
     onWrongAnswer(word);
+    onLoseLife();
     triggerNotification('خطأ', 'error');
   };
 
@@ -100,56 +104,36 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     onCorrectAnswer();
   };
 
-  const renderHearts = () => {
-    const hearts = [];
-    for (let i = 0; i < 3; i++) {
-      hearts.push(
-        <Heart
-          key={i}
-          className={`w-6 h-6 transition-all duration-300 ${i < lives
-            ? 'text-[#ff007f] fill-[#ff007f] filter drop-shadow-[0_0_5px_rgba(255,0,127,0.7)]'
-            : 'text-gray-600 fill-transparent'
-            }`}
-        />
-      );
-    }
-    return <div className="flex gap-1">{hearts}</div>;
-  };
-
   return (
     <div className="game-screen w-full max-w-[1440px] mx-auto p-3 sm:p-5 lg:p-7 flex flex-col items-center justify-start gap-3 lg:gap-5">
 
       {/* 1. Header panel */}
-      <div className="game-header glass-panel w-full flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 relative z-10">
-        <button
-          onClick={onBackToWelcome}
-          className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
-        >
-          <ArrowLeft className="w-4 h-4 ml-1 p-2" />
-          الرئيسية
-        </button>
-
-        {/* HUD Info */}
-        <div className="game-hud flex items-center gap-3 sm:gap-6">
-          {/* Level */}
-          <div className="flex flex-col items-end">
-            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">المرحلة</span>
-            <span className="text-xl font-black text-[#00f0ff]" dir="ltr">{currentQuestionIndex + 1} / {questions.length}</span>
+      <header className="maze-header glass-panel" dir="ltr">
+        <div className="maze-header__main">
+          <div className="maze-header__left">
+            <div className="maze-header__lives" dir="rtl">
+              <span>القلوب</span>
+              <div className="maze-header__hearts">
+                {Array.from({ length: 3 }, (_, index) => <img key={index} src={heartImage} alt="" className={index < lives ? 'is-active' : 'is-inactive'} />)}
+              </div>
+            </div>
+            <div className="maze-header__coins" aria-label={`النقاط: ${coins}`}>
+              <img src={coinImage} alt="" />
+              <strong>{coins}</strong>
+            </div>
           </div>
-
-          {/* Score */}
-          <div className="flex flex-col items-end">
-            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">النقاط</span>
-            <span className="text-xl font-black text-[#39ff14]" dir="ltr">{score}</span>
+          <div className="maze-header__question" dir="rtl">
+            <span>السؤال</span>
+            <strong dir="ltr">{Math.min(currentQuestionIndex + 1, questions.length)}/{questions.length}</strong>
           </div>
-
-          {/* Lives */}
-          <div className="flex flex-col items-end">
-            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">المحاولات</span>
-            <div dir="ltr">{renderHearts()}</div>
-          </div>
+          <button className="maze-header__exit" type="button" onClick={onBackToWelcome} aria-label="خروج إلى الرئيسية">
+            <img src={ExitButton} alt="" />
+          </button>
         </div>
-      </div>
+        <div className="maze-header__progress" role="progressbar" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={currentQuestionIndex}>
+          <span style={{ width: `${questions.length ? (Math.min(currentQuestionIndex + 1, questions.length) / questions.length) * 100 : 0}%` }} />
+        </div>
+      </header>
 
       {/* 2. Main layout */}
       <div className="game-main flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-4 lg:gap-8 pb-2">
