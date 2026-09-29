@@ -43,10 +43,10 @@ const INTRO_DURATION_FRAMES = 90;
 
 // Room Centers & Colors
 const ROOMS = [
-  { id: 0, x: 2, y: 2, label: 'أعلى اليسار', color: '#39ff14', glow: 'rgba(57, 255, 20, 0.15)' }, // TL
-  { id: 1, x: 16, y: 2, label: 'أعلى اليمين', color: '#bd00ff', glow: 'rgba(189, 0, 255, 0.15)' }, // TR
-  { id: 2, x: 2, y: 16, label: 'أسفل اليسار', color: '#ff5f00', glow: 'rgba(255, 95, 0, 0.15)' }, // BL
-  { id: 3, x: 16, y: 16, label: 'أسفل اليمين', color: '#ff007f', glow: 'rgba(255, 0, 127, 0.15)' } // BR
+  { id: 0, x: 2, y: 2, label: 'أعلى اليسار', color: '#00f0ff', glow: 'rgba(0, 240, 255, 0.12)' }, // TL
+  { id: 1, x: 16, y: 2, label: 'أعلى اليمين', color: '#00f0ff', glow: 'rgba(0, 240, 255, 0.12)' }, // TR
+  { id: 2, x: 2, y: 16, label: 'أسفل اليسار', color: '#00f0ff', glow: 'rgba(0, 240, 255, 0.12)' }, // BL
+  { id: 3, x: 16, y: 16, label: 'أسفل اليمين', color: '#00f0ff', glow: 'rgba(0, 240, 255, 0.12)' } // BR
 ];
 
 
@@ -940,25 +940,29 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.restore();
       });
 
-      // 3. Draw Room Words (Arabic connected text support)
+      // 3. Draw room answers; shrink long labels to keep them inside the room.
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 18px FontGame';
 
-      // Room colored floor glow
       activeRooms.forEach((room) => {
         const textX = room.x * cellSize + cellSize / 2;
         const textY = room.y * cellSize + cellSize / 2;
+        const answerText = words[room.id] || '';
+        const maxTextWidth = cellSize * 2.65;
+        let fontSize = Math.min(18, cellSize * 0.55);
 
-        // Draw shadow/glow behind word
+        ctx.font = `bold ${fontSize}px FontGame`;
+        while (fontSize > 9 && ctx.measureText(answerText).width > maxTextWidth) {
+          fontSize -= 1;
+          ctx.font = `bold ${fontSize}px FontGame`;
+        }
+
         ctx.fillStyle = '#000000';
-        ctx.font = 'bold 19px FontGame';
-        ctx.fillText(words[room.id] || '', textX + 1, textY + 1);
+        ctx.font = `bold ${fontSize}px FontGame`;
+        ctx.fillText(answerText, textX + 1, textY + 1, maxTextWidth);
 
-        // Draw word text
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px FontGame';
-        ctx.fillText(words[room.id] || '', textX, textY);
+        ctx.fillText(answerText, textX, textY, maxTextWidth);
       });
 
       // 4. Draw Player
