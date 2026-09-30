@@ -187,7 +187,7 @@ body.game-active #root {
     width: 100%;
     max-width: 1920px;
     padding: clamp(12px, 1.5vw, 28px);
-    gap: clamp(10px, 1.2vw, 20px);
+    gap: clamp(8px, 1vw, 16px);
   }
 
   .game-main {
@@ -195,7 +195,7 @@ body.game-active #root {
   }
 
   .question-panel {
-    flex-basis: clamp(250px, 18vw, 340px);
+    flex-basis: clamp(230px, 16vw, 300px);
   }
 
   .maze-column {
@@ -203,7 +203,7 @@ body.game-active #root {
   }
 
   .maze-canvas-shell {
-    width: min(100%, calc(100dvh - 190px));
+    width: min(100%, calc(100dvh - 170px));
     height: auto !important;
     max-width: none;
     max-height: none;
@@ -323,11 +323,11 @@ body.game-active #root {
 /* Keep the tablet maze large after the mobile stacking rules above. */
 @media (min-width: 768px) and (max-width: 1023px) {
   .question-panel {
-    flex-basis: clamp(150px, 21dvh, 220px);
+    flex-basis: clamp(125px, 17dvh, 185px);
   }
 
   .maze-canvas-shell {
-    width: min(100%, calc(100dvh - 220px));
+    width: min(100%, calc(100dvh - 190px));
   }
 }
 
