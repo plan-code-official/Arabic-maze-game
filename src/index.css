@@ -175,6 +175,62 @@ body.game-active #root {
   min-height: 0;
 }
 
+/* Give the maze the dominant visual area on wider displays. The canvas remains
+   square, but its maximum size now follows the available viewport instead of
+   being limited by the question card's fixed desktop width. */
+.maze-canvas-shell {
+  flex: 0 1 auto;
+}
+
+@media (min-width: 1024px) {
+  .game-screen {
+    width: 100%;
+    max-width: 1920px;
+    padding: clamp(12px, 1.5vw, 28px);
+    gap: clamp(10px, 1.2vw, 20px);
+  }
+
+  .game-main {
+    gap: clamp(16px, 2vw, 32px);
+  }
+
+  .question-panel {
+    flex-basis: clamp(250px, 18vw, 340px);
+  }
+
+  .maze-column {
+    flex-basis: 0;
+  }
+
+  .maze-canvas-shell {
+    width: min(100%, calc(100dvh - 190px));
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .game-screen {
+    padding: 12px clamp(16px, 3vw, 36px);
+  }
+
+  .game-main {
+    gap: 10px;
+  }
+
+  .question-panel {
+    flex-basis: clamp(150px, 21dvh, 220px);
+  }
+
+  .maze-canvas-shell {
+    width: min(100%, calc(100dvh - 220px));
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+  }
+}
+
 @media (max-width: 1023px) {
   .game-screen {
     padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
@@ -261,6 +317,17 @@ body.game-active #root {
 
   .question-panel {
     flex-basis: clamp(135px, 25dvh, 205px);
+  }
+}
+
+/* Keep the tablet maze large after the mobile stacking rules above. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .question-panel {
+    flex-basis: clamp(150px, 21dvh, 220px);
+  }
+
+  .maze-canvas-shell {
+    width: min(100%, calc(100dvh - 220px));
   }
 }
 
