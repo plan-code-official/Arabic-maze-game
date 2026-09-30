@@ -7,7 +7,7 @@ import QuestionNumberBg from '../assets/QuestionNumber.png';
 import DescriptionImg from '../assets/description.png';
 import DaddCoin from '../assets/daddcoin.webp';
 import startBtn from '../assets/start_transparent.png';
-import exitBtn from '../assets/exit_transparent.png';
+import exitBtn from '../assets/Exit1.png';
 import { gameAudio } from '../utils/audio';
 
 interface WelcomeScreenProps {

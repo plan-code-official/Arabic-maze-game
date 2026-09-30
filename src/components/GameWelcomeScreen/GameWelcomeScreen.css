@@ -214,3 +214,30 @@
     max-height: 60vh;
   }
 }
+
+@media (max-width: 950px) {
+  .gws-footer {
+    width: 100%;
+    margin-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .gws-footer-buttons {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: clamp(8px, 3vw, 18px);
+    padding-inline: 8px;
+  }
+  .gws-img-btn,
+  .gws-start-btn {
+    width: clamp(112px, 38vw, 190px);
+    min-width: 0;
+    height: auto;
+    aspect-ratio: 565 / 231;
+    flex: 0 1 190px;
+  }
+  .gws-img-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .gws-start-btn { padding-bottom: 0; }
+}
