@@ -38,7 +38,7 @@ const WARP_PORTALS = [
 // Desktop gets a wider camera so both side caves can be visible together;
 // touch devices keep the closer view for easier movement and readability.
 const FULL_MAZE_ZOOM = 1;
-const DESKTOP_GAMEPLAY_ZOOM = 1.55;
+const DESKTOP_GAMEPLAY_ZOOM = 1.8;
 const MOBILE_GAMEPLAY_ZOOM = 1.55;
 const INTRO_DURATION_FRAMES = 90;
 
@@ -516,6 +516,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
 
     const resizeCanvas = () => {
       const bounds = containerRef.current?.getBoundingClientRect();
