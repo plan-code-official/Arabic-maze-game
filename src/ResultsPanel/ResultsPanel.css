@@ -34,6 +34,13 @@
   font-family: 'Poppins', sans-serif;
 }
 
+/* The app-wide universal font rule assigns a font directly to every node;
+   override it for the complete results UI, not only through inheritance. */
+.results-screen,
+.results-screen * {
+  font-family: 'Poppins', sans-serif;
+}
+
 .results-panel {
   position: relative;
   flex: 0 1 auto;
