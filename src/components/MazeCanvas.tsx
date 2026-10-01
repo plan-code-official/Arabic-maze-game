@@ -41,6 +41,7 @@ const FULL_MAZE_ZOOM = 1;
 const DESKTOP_GAMEPLAY_ZOOM = 1.8;
 const TABLET_GAMEPLAY_ZOOM = 1.8;
 const MOBILE_GAMEPLAY_ZOOM = 1.55;
+const PLAYER_MOVE_SPEED = 1.25;
 const INTRO_DURATION_FRAMES = 90;
 
 // Room Centers & Colors
@@ -129,7 +130,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     gridY: 9,
     targetX: 9,
     targetY: 9,
-    speed: 2,
+    speed: PLAYER_MOVE_SPEED,
     dir: 'none',
     nextDir: 'none',
     invincibleFrames: 0,
@@ -353,7 +354,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       gridY: 9,
       targetX: 9,
       targetY: 9,
-      speed: 2.5,
+      speed: PLAYER_MOVE_SPEED,
       dir: 'none',
       nextDir: 'none',
       invincibleFrames: 120, // 2 seconds safety on level start
@@ -369,22 +370,23 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     // Reset monsters based on current level — distinct speeds per personality
     const isMobileDevice = lowPowerDeviceRef.current;
     const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
+    const isEasyDevice = isMobileDevice || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches);
     gameplayZoomRef.current = isTabletViewport
       ? TABLET_GAMEPLAY_ZOOM
       : isMobileDevice
         ? MOBILE_GAMEPLAY_ZOOM
         : DESKTOP_GAMEPLAY_ZOOM;
-    let chaserSpeed = isMobileDevice ? 1.0 : 1.3;
-    let ambusherSpeed = isMobileDevice ? 0.86 : 1.1;
-    let wandererSpeed = isMobileDevice ? 0.74 : 0.9;
+    let chaserSpeed = isEasyDevice ? 0.78 : 1.3;
+    let ambusherSpeed = isEasyDevice ? 0.66 : 1.1;
+    let wandererSpeed = isEasyDevice ? 0.56 : 0.9;
     if (level >= 2 && level <= 4) {
-      chaserSpeed = isMobileDevice ? 1.08 : 1.4;
-      ambusherSpeed = isMobileDevice ? 0.92 : 1.2;
-      wandererSpeed = isMobileDevice ? 0.8 : 1.0;
+      chaserSpeed = isEasyDevice ? 0.84 : 1.4;
+      ambusherSpeed = isEasyDevice ? 0.72 : 1.2;
+      wandererSpeed = isEasyDevice ? 0.62 : 1.0;
     } else if (level >= 5) {
-      chaserSpeed = isMobileDevice ? 1.16 : 1.5;
-      ambusherSpeed = isMobileDevice ? 0.98 : 1.3;
-      wandererSpeed = isMobileDevice ? 0.86 : 1.1;
+      chaserSpeed = isEasyDevice ? 0.9 : 1.5;
+      ambusherSpeed = isEasyDevice ? 0.78 : 1.3;
+      wandererSpeed = isEasyDevice ? 0.68 : 1.1;
     }
 
     ghostModeRef.current = 'scatter';
