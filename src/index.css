@@ -711,6 +711,15 @@ body.game-active #root {
   padding-top: 2px;
 }
 
+/* Give the question image and its text a little breathing room on larger
+   layouts without changing the compact mobile composition. */
+@media (min-width: 768px) {
+  .question-content--image-text .question-text,
+  .question-content--image-text-audio .question-text {
+    margin-top: clamp(8px, 1.2dvh, 18px);
+  }
+}
+
 .question-content--image-audio .question-image-wrap {
   flex: 1 1 auto;
   min-height: 0;

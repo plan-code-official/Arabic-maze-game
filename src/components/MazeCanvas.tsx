@@ -40,7 +40,9 @@ const WARP_PORTALS = [
 const FULL_MAZE_ZOOM = 1;
 const DESKTOP_GAMEPLAY_ZOOM = 1.8;
 const TABLET_GAMEPLAY_ZOOM = 1.8;
-const MOBILE_GAMEPLAY_ZOOM = 1.55;
+// Mobile gets a wider view of the maze so movement feels less cramped and
+// the player can better anticipate nearby paths and enemies.
+const MOBILE_GAMEPLAY_ZOOM = 1.25;
 const PLAYER_MOVE_SPEED = 1.25;
 const ENEMY_SPEED_REMAINING_RATIO = 0.7;
 const INTRO_DURATION_FRAMES = 90;
@@ -371,11 +373,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     // Keep the existing level/device tuning, then reduce it by 30% so enemies
     // remain capable of chasing without overwhelming the player.
     const isMobileDevice = lowPowerDeviceRef.current;
+    const isMobileViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
     const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
     const isEasyDevice = isMobileDevice || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches);
     gameplayZoomRef.current = isTabletViewport
       ? TABLET_GAMEPLAY_ZOOM
-      : isMobileDevice
+      : isMobileViewport
         ? MOBILE_GAMEPLAY_ZOOM
         : DESKTOP_GAMEPLAY_ZOOM;
     let chaserSpeed = isEasyDevice ? 0.78 : 1.3;
