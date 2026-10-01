@@ -28,6 +28,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onBackToWelcome,
 }) => {
   const currentQuestion = questions[currentQuestionIndex];
+  const hasQuestionImage = Boolean(currentQuestion?.image);
+  const hasQuestionText = Boolean(currentQuestion?.questionText?.trim());
+  const hasQuestionAudio = Boolean(currentQuestion?.audioUrl);
+  const questionLayout = `${hasQuestionImage ? 'image-' : ''}${hasQuestionText ? 'text-' : ''}${hasQuestionAudio ? 'audio' : ''}`.replace(/-$/, '');
 
   // Distribute correct word + 3 distractors randomly
   // To keep it persistent for this question, we memoize it or generate it once.
@@ -142,7 +146,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         <div className="question-panel glass-panel w-full lg:w-[320px] p-3 sm:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Text and/or Image */}
           {currentQuestion && (
-            <div className="question-content relative z-10 w-full h-full flex flex-col items-center justify-center gap-2 sm:gap-3">
+            <div className={`question-content question-content--${questionLayout || 'empty'} relative z-10 w-full h-full flex flex-col items-center justify-center gap-2 sm:gap-3`}>
               <Target className="question-decoration absolute text-[#00f0ff] opacity-5 filter blur-sm" aria-hidden="true" />
 
               {currentQuestion.image && (

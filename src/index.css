@@ -443,6 +443,67 @@ body.game-active #root {
   }
 }
 
+/* Intentional content hierarchy for each question combination. */
+.question-content--text {
+  justify-content: center;
+}
+
+.question-content--text .question-text {
+  flex: 0 1 auto;
+  max-height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.question-content--image-text,
+.question-content--image-text-audio {
+  justify-content: flex-start;
+}
+
+.question-content--image-text .question-image-wrap,
+.question-content--image-text-audio .question-image-wrap {
+  flex: 0 0 36%;
+  width: 100%;
+  max-height: none;
+  min-height: 0;
+}
+
+.question-content--image-text .question-text,
+.question-content--image-text-audio .question-text,
+.question-content--text-audio .question-text {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  width: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.question-content--image-text-audio .question-audio,
+.question-content--text-audio .question-audio {
+  flex: 0 0 auto;
+  padding-top: 2px;
+}
+
+.question-content--image-audio .question-image-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.question-content--image-audio .question-audio {
+  flex: 0 0 auto;
+}
+
+.question-content--image-text-audio .question-image-wrap img,
+.question-content--image-text .question-image-wrap img {
+  max-height: 100%;
+}
+
 /* Glassmorphism Classes */
 .glass-panel {
   background: var(--bg-card);
