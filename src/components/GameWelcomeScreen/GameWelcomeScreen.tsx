@@ -61,25 +61,27 @@ export default function GameWelcomeScreen({
         </div>
       </header>
 
-      <main className="gws-body">
-        <img className="gws-description-art" src={descriptionImage} alt="شرح طريقة اللعب" />
-      </main>
+      <div className="gws-main-footer">
+        <main className="gws-body">
+          <img className="gws-description-art" src={descriptionImage} alt="شرح طريقة اللعب" />
+        </main>
 
-      <footer className="gws-footer">
-        <div className="gws-footer-buttons">
-          <button className="gws-img-btn" type="button" onClick={handleExit} aria-label="خروج">
-            <img src={exitButtonImage} alt="" />
-          </button>
-          <button
-            className="gws-start-btn"
-            type="button"
-            style={{ backgroundImage: `url(${startButtonImage})` }}
-            onClick={onStart}
-            disabled={startDisabled}
-            aria-label={isLoading ? 'جارٍ التحميل' : 'ابدأ اللعبة'}
-          />
-        </div>
-      </footer>
+        <footer className="gws-footer">
+          <div className="gws-footer-buttons">
+            <button className="gws-img-btn" type="button" onClick={handleExit} aria-label="خروج">
+              <img src={exitButtonImage} alt="" />
+            </button>
+            <button
+              className="gws-start-btn"
+              type="button"
+              style={{ backgroundImage: `url(${startButtonImage})` }}
+              onClick={onStart}
+              disabled={startDisabled}
+              aria-label={isLoading ? 'جارٍ التحميل' : 'ابدأ اللعبة'}
+            />
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
