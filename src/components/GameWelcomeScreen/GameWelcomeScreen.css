@@ -152,14 +152,13 @@
    image and fixed-size footer remain visually close without shrinking either. */
 @media (max-width: 599px) {
   .gws-screen { gap: clamp(6px, 1.2dvh, 12px); }
-  .gws-main-footer { gap: clamp(6px, 1.2dvh, 12px); }
+  .gws-body { justify-content: flex-end; }
 }
 
 /* Short landscape phones: preserve the no-scroll page and, only if needed,
    allow the center art area—not the document—to become the safety valve. */
 @media (max-height: 500px) {
   .gws-screen { gap: 5px; }
-  .gws-main-footer { gap: 5px; }
   .gws-header { width: clamp(142px, 23vw, 190px); }
   .gws-stat-text,
   .gws-stat-equals { font-size: clamp(14px, 2.8vw, 18px); }
@@ -174,5 +173,4 @@
    flex sizing of the center zone or enable page scrolling. */
 @media (min-width: 260px) and (max-width: 599px) {
   .gws-screen { gap: clamp(6px, 1.2dvh, 12px); }
-  .gws-main-footer { gap: clamp(6px, 1.2dvh, 12px); }
 }
