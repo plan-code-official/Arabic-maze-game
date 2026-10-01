@@ -333,11 +333,21 @@ body.game-active #root {
 
 /* Keep the tablet maze large after the mobile stacking rules above. */
 @media (min-width: 768px) and (max-width: 1023px) {
+  .game-main {
+    flex-direction: row;
+    align-items: stretch;
+    gap: clamp(10px, 2vw, 20px);
+  }
+
   .question-panel {
-    flex-basis: clamp(125px, 17dvh, 185px);
+    flex: 0 0 clamp(180px, 24vw, 260px);
+    width: clamp(180px, 24vw, 260px);
+    height: 100%;
   }
 
   .maze-column {
+    flex: 1 1 auto;
+    width: auto;
     align-items: stretch;
   }
 
