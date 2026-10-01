@@ -581,7 +581,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         // Check if player stepped on a warp portal
         const steppedPortal = WARP_PORTALS.find(p => p.x === player.gridX && p.y === player.gridY);
         if (steppedPortal) {
-          gameAudio.playTeleport();
+          gameAudio.playPortalTeleport();
           player.x = steppedPortal.targetX * cellSize + cellSize / 2;
           player.y = steppedPortal.targetY * cellSize + cellSize / 2;
           player.gridX = steppedPortal.targetX;
