@@ -31,7 +31,7 @@
   justify-content: center;
   gap: clamp(8px, 2dvh, 22px);
   overflow: hidden;
-  font-family: Lateef, "Segoe UI", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .results-panel {
@@ -89,7 +89,7 @@
   font-weight: 900;
   line-height: 1;
   text-shadow: 0 0 16px rgba(255, 59, 48, .75), 0 2px 6px rgba(0, 0, 0, .9);
-  font-family: 'Poppins', 'Lateef', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .results-grade {
@@ -109,7 +109,7 @@
   box-shadow: inset 0 0 18px rgba(0, 223, 255, .32), 0 0 22px rgba(0, 226, 255, .22);
   color: #fff;
   text-align: center;
-  font-family: 'Poppins', 'Lateef', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .results-grade span {
