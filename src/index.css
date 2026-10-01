@@ -197,6 +197,33 @@ body.game-active #root {
   .question-panel {
     flex-basis: clamp(280px, 20vw, 360px);
     width: clamp(280px, 20vw, 360px);
+    overflow: hidden;
+  }
+
+  .question-content {
+    justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: clamp(4px, 0.6vw, 10px);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 240, 255, 0.55) transparent;
+  }
+
+  .question-image-wrap {
+    flex: 0 1 auto;
+    max-height: 45%;
+  }
+
+  .question-text {
+    flex: 0 1 auto;
+    max-height: 38%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+    -webkit-line-clamp: unset;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   .maze-column {
