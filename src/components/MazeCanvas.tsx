@@ -389,6 +389,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       wandererSpeed = isEasyDevice ? 0.68 : 1.1;
     }
 
+    // Keep the cyan ambusher as tactically distinct as the red chaser, but
+    // give both enemies the same movement difficulty at every level/device.
+    ambusherSpeed = chaserSpeed;
+
     ghostModeRef.current = 'scatter';
     ghostTimerRef.current = Date.now();
     introRef.current = { active: true, progress: 0 };
