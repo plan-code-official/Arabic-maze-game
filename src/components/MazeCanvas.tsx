@@ -81,7 +81,6 @@ interface MazeCanvasProps {
 }
 
 export const MazeCanvas: React.FC<MazeCanvasProps> = ({
-  level,
   words,
   correctWord,
   onCorrect,
@@ -368,8 +367,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       zoom: FULL_MAZE_ZOOM
     };
 
-    // Keep the existing level/device tuning, then reduce it by 30% so enemies
-    // remain capable of chasing without overwhelming the player.
+    // Keep device-specific tuning stable across every level, then reduce it by
+    // 30% so enemies remain capable of chasing without overwhelming the player.
     const isMobileDevice = lowPowerDeviceRef.current;
     const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
     const isEasyDevice = isMobileDevice || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches);
@@ -381,15 +380,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     let chaserSpeed = isEasyDevice ? 0.78 : 1.3;
     let ambusherSpeed = isEasyDevice ? 0.66 : 1.1;
     let wandererSpeed = isEasyDevice ? 0.56 : 0.9;
-    if (level >= 2 && level <= 4) {
-      chaserSpeed = isEasyDevice ? 0.84 : 1.4;
-      ambusherSpeed = isEasyDevice ? 0.72 : 1.2;
-      wandererSpeed = isEasyDevice ? 0.62 : 1.0;
-    } else if (level >= 5) {
-      chaserSpeed = isEasyDevice ? 0.9 : 1.5;
-      ambusherSpeed = isEasyDevice ? 0.78 : 1.3;
-      wandererSpeed = isEasyDevice ? 0.68 : 1.1;
-    }
 
     chaserSpeed *= ENEMY_SPEED_REMAINING_RATIO;
     ambusherSpeed = chaserSpeed;
