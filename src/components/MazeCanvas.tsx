@@ -38,7 +38,7 @@ const WARP_PORTALS = [
 // Desktop gets a wider camera so both side caves can be visible together;
 // touch devices keep the closer view for easier movement and readability.
 const FULL_MAZE_ZOOM = 1;
-const DESKTOP_GAMEPLAY_ZOOM = 1.15;
+const DESKTOP_GAMEPLAY_ZOOM = 1.55;
 const MOBILE_GAMEPLAY_ZOOM = 1.55;
 const INTRO_DURATION_FRAMES = 90;
 
@@ -517,6 +517,26 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const resizeCanvas = () => {
+      const bounds = containerRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+
+      // Keep a 2x backing buffer for crisp pixel art while letting the CSS
+      // canvas fill the complete responsive maze wrapper.
+      const nextWidth = Math.max(1, Math.floor(bounds.width * 2));
+      const nextHeight = Math.max(1, Math.floor(bounds.height * 2));
+      if (canvas.width !== nextWidth) canvas.width = nextWidth;
+      if (canvas.height !== nextHeight) canvas.height = nextHeight;
+    };
+
+    resizeCanvas();
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(resizeCanvas)
+      : null;
+    if (resizeObserver && containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
     const updateGame = () => {
       if (isPaused || lives <= 0) return;
 
@@ -600,8 +620,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       camera.y += (player.y - camera.y) * camLerp;
 
       const zoom = camera.zoom;
-      const visibleWidth = (19 * cellSize) / zoom;
-      const visibleHeight = (19 * cellSize) / zoom;
+      const visibleWidth = Math.min(19 * cellSize, canvas.width / (2 * zoom));
+      const visibleHeight = Math.min(19 * cellSize, canvas.height / (2 * zoom));
       const minX = visibleWidth / 2;
       const maxX = (19 * cellSize) - minX;
       const minY = visibleHeight / 2;
@@ -821,7 +841,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       ctx.save();
       ctx.scale(2, 2);
       const zoom = cameraRef.current.zoom;
-      ctx.translate((19 * cellSize) / 2, (19 * cellSize) / 2);
+      ctx.translate(canvas.width / 4, canvas.height / 4);
       ctx.scale(zoom, zoom);
       ctx.translate(-cameraRef.current.x, -cameraRef.current.y);
 
@@ -830,7 +850,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
       // Draw cached static background
       if (bgCanvasRef.current) {
-        ctx.drawImage(bgCanvasRef.current, 0, 0);
+        ctx.drawImage(bgCanvasRef.current, 0, 0, 19 * cellSize, 19 * cellSize);
       }
 
       // 2.5 Draw Warp Portals
@@ -1125,6 +1145,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     return () => {
       cancelAnimationFrame(animationId);
+      resizeObserver?.disconnect();
     };
   }, [isPaused, lives, words, correctWord]);
 

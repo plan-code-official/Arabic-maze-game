@@ -200,12 +200,22 @@ body.game-active #root {
   }
 
   .maze-column {
+    flex: 1 1 auto;
     flex-basis: 0;
+    align-items: stretch;
   }
 
   .maze-canvas-shell {
-    width: min(100%, calc(100dvh - 170px));
-    height: auto !important;
+    width: 100%;
+    height: 100% !important;
+    max-width: none;
+    max-height: none;
+    aspect-ratio: auto;
+  }
+
+  .maze-canvas-shell canvas {
+    width: 100%;
+    height: 100%;
     max-width: none;
     max-height: none;
   }
