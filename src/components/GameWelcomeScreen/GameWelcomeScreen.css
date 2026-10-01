@@ -1,47 +1,43 @@
 .gws-screen {
+  --gws-btn-ar-w: 565;
+  --gws-btn-ar-h: 231;
   position: fixed;
   inset: 0;
   z-index: 5000;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  /* Match the results screen rhythm between the main visual and CTAs. */
-  gap: clamp(8px, 2dvh, 22px);
   width: 100%;
   height: 100dvh;
+  min-height: 0;
+  box-sizing: border-box;
   padding: max(8px, env(safe-area-inset-top)) clamp(10px, 3vw, 40px) max(8px, env(safe-area-inset-bottom));
   overflow: hidden;
   background-color: #0a0d1a;
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.08) 0%, transparent 40%);
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, .1) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 0, 127, .08) 0%, transparent 40%);
   background-position: center;
   background-size: cover;
   font-family: Lateef, var(--font-arabic, sans-serif);
   direction: rtl;
 }
 
-/* Three regions only: score header, centered description art, and CTA footer. */
 .gws-header {
-  position: relative;
   flex: 0 0 auto;
   align-self: flex-start;
-  /* Physical margins keep this pill at the left even while the screen is RTL. */
-  margin-right: auto;
-  margin-left: 0;
   width: clamp(160px, 18vw, 250px);
+  margin-inline-end: auto;
   z-index: 1;
 }
 
 .gws-stats-bg {
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: auto;
   aspect-ratio: 397 / 137;
   padding: 5% 9%;
+  box-sizing: border-box;
   gap: 5px;
   background-position: center;
   background-repeat: no-repeat;
@@ -52,7 +48,6 @@
 .gws-stat-icon {
   flex: 0 0 auto;
   width: clamp(18px, 2vw, 29px);
-  height: auto;
   aspect-ratio: 1;
   object-fit: contain;
 }
@@ -69,44 +64,54 @@
 
 .gws-stat-text--yellow { color: #ffe500; }
 
-.gws-main-footer {
-  display: flex;
+.gws-main {
   flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.gws-stage {
+  --gws-art-ratio: 1545 / 1035;
+  --gws-gap: clamp(8px, 2dvh, 22px);
+  --gws-stage-w: min(100%, 800px, calc((100dvh - 108px) * var(--gws-art-ratio) / (var(--gws-art-ratio) + .5 * var(--gws-btn-ar-h) / var(--gws-btn-ar-w) + .035)));
+  width: var(--gws-stage-w);
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 2dvh, 22px);
-  width: 100%;
-  min-height: 0;
+  gap: var(--gws-gap);
 }
 
 .gws-body {
-  display: flex;
   flex: 0 1 auto;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  width: 100%;
-  min-height: 0;
   min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
   overflow: hidden;
 }
 
 .gws-description-art {
   display: block;
-  flex: 0 1 auto;
-  width: auto;
+  width: 100%;
   height: auto;
-  max-width: min(90vw, 800px);
-  max-height: min(55dvh, 500px, 100%);
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 14px 28px rgba(0, 0, 0, .42));
 }
 
 .gws-footer {
   flex: 0 0 auto;
-  align-self: center;
-  width: min(100%, clamp(280px, 38vw, 720px));
+  width: 100%;
   padding-bottom: max(0px, env(safe-area-inset-bottom));
 }
 
@@ -123,7 +128,7 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 565 / 231;
+  aspect-ratio: var(--gws-btn-ar-w) / var(--gws-btn-ar-h);
   min-width: 0;
   box-sizing: border-box;
   padding: 0;
@@ -136,10 +141,16 @@
 .gws-start-btn {
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-size: contain;
 }
 
-.gws-img-btn img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.gws-img-btn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .gws-img-btn:hover,
 .gws-start-btn:hover:not(:disabled) { transform: translateY(-2px) scale(1.025); filter: brightness(1.12); }
 .gws-img-btn:active,
@@ -148,29 +159,13 @@
 .gws-img-btn:focus-visible,
 .gws-start-btn:focus-visible { outline: 3px solid #8bf4ff; outline-offset: 3px; border-radius: 15px; }
 
-/* On phones, use the flexible center zone's spare space above the art so the
-   image and fixed-size footer remain visually close without shrinking either. */
-@media (max-width: 599px) {
-  .gws-screen { gap: clamp(6px, 1.2dvh, 12px); }
-  .gws-body { justify-content: flex-end; }
-}
-
-/* Short landscape phones: preserve the no-scroll page and, only if needed,
-   allow the center art area—not the document—to become the safety valve. */
 @media (max-height: 500px) {
-  .gws-screen { gap: 5px; }
   .gws-header { width: clamp(142px, 23vw, 190px); }
   .gws-stat-text,
   .gws-stat-equals { font-size: clamp(14px, 2.8vw, 18px); }
   .gws-stat-icon { width: clamp(15px, 3vw, 21px); }
-  .gws-footer { width: min(100%, clamp(230px, 45vw, 440px)); }
-  .gws-body { overflow-y: auto; overflow-x: hidden; }
-  .gws-description-art { max-height: min(48dvh, 360px, 100%); }
-}
-
-/* From 260px-wide mobile screens upward, close the footer to the hero art.
-   The negative margin only tightens the visual gap; it does not change the
-   flex sizing of the center zone or enable page scrolling. */
-@media (min-width: 260px) and (max-width: 599px) {
-  .gws-screen { gap: clamp(6px, 1.2dvh, 12px); }
+  .gws-stage {
+    --gws-gap: 5px;
+    --gws-stage-w: min(100%, 800px, calc((100dvh - 72px) * var(--gws-art-ratio) / (var(--gws-art-ratio) + .5 * var(--gws-btn-ar-h) / var(--gws-btn-ar-w) + .035)));
+  }
 }
