@@ -617,7 +617,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             player.dir = desiredDir;
             player.targetX = player.gridX + dX;
             player.targetY = player.gridY + dY;
-            gameAudio.playMove();
           } else {
             player.dir = 'none';
           }
