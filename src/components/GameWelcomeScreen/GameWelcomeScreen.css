@@ -72,7 +72,7 @@
 .gws-body {
   display: flex;
   flex: 1 1 auto;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   align-self: center;
   width: 100%;
@@ -141,7 +141,6 @@
    image and fixed-size footer remain visually close without shrinking either. */
 @media (max-width: 599px) {
   .gws-screen { gap: clamp(6px, 1.2dvh, 12px); }
-  .gws-body { justify-content: flex-end; }
 }
 
 /* Short landscape phones: preserve the no-scroll page and, only if needed,
