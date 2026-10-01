@@ -35,10 +35,11 @@ const WARP_PORTALS = [
   { x: 9, y: 18, targetX: 9, targetY: 1, exitDir: 'down', color: '#ff007f' }
 ];
 
-// The canvas is rendered at 2x resolution, so 1.55 shows roughly two-thirds
-// of the maze while still keeping the player and nearby paths readable.
+// Desktop gets a wider camera so both side caves can be visible together;
+// touch devices keep the closer view for easier movement and readability.
 const FULL_MAZE_ZOOM = 1;
-const GAMEPLAY_ZOOM = 1.55;
+const DESKTOP_GAMEPLAY_ZOOM = 1.15;
+const MOBILE_GAMEPLAY_ZOOM = 1.55;
 const INTRO_DURATION_FRAMES = 90;
 
 // Room Centers & Colors
@@ -143,7 +144,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   // Local state for wrong room cooldowns to prevent double triggers
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
-  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: GAMEPLAY_ZOOM });
+  const gameplayZoomRef = useRef(DESKTOP_GAMEPLAY_ZOOM);
+  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: DESKTOP_GAMEPLAY_ZOOM });
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
   const introRef = useRef<{ active: boolean, progress: number }>({ active: true, progress: 0 });
   const frameCountRef = useRef(0);
@@ -365,6 +367,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     // Reset monsters based on current level — distinct speeds per personality
     const isMobileDevice = lowPowerDeviceRef.current;
+    gameplayZoomRef.current = isMobileDevice ? MOBILE_GAMEPLAY_ZOOM : DESKTOP_GAMEPLAY_ZOOM;
     let chaserSpeed = isMobileDevice ? 1.0 : 1.3;
     let ambusherSpeed = isMobileDevice ? 0.86 : 1.1;
     let wandererSpeed = isMobileDevice ? 0.74 : 0.9;
@@ -1087,7 +1090,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         // Easing cubic out
         const easeRatio = 1 - Math.pow(1 - ratio, 3);
-        cameraRef.current.zoom = GAMEPLAY_ZOOM + (6.0 - GAMEPLAY_ZOOM) * easeRatio;
+        const gameplayZoom = gameplayZoomRef.current;
+        cameraRef.current.zoom = gameplayZoom + (6.0 - gameplayZoom) * easeRatio;
 
         // Pull camera heavily towards player during zoom
         const player = playerRef.current;
@@ -1096,18 +1100,18 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         if (p >= maxFrames) {
           celebrationRef.current = null;
-          cameraRef.current.zoom = GAMEPLAY_ZOOM; // reset
+          cameraRef.current.zoom = gameplayZoom; // reset
           onCorrect();
         }
       } else if (introRef.current.active) {
         introRef.current.progress++;
         const ratio = Math.min(introRef.current.progress / INTRO_DURATION_FRAMES, 1);
         const easeRatio = 1 - Math.pow(1 - ratio, 3);
-        cameraRef.current.zoom = FULL_MAZE_ZOOM + (GAMEPLAY_ZOOM - FULL_MAZE_ZOOM) * easeRatio;
+        cameraRef.current.zoom = FULL_MAZE_ZOOM + (gameplayZoomRef.current - FULL_MAZE_ZOOM) * easeRatio;
 
         if (ratio >= 1) {
           introRef.current.active = false;
-          cameraRef.current.zoom = GAMEPLAY_ZOOM;
+          cameraRef.current.zoom = gameplayZoomRef.current;
         }
       } else {
         updateGame();
