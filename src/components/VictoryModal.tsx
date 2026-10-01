@@ -23,7 +23,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   onHome,
 }) => {
   const [showCelebration, setShowCelebration] = useState(
-    totalQuestions > 0 && correctAnswers / totalQuestions > 0.5
+    totalQuestions > 0 && correctAnswers / totalQuestions >= 0.5
   );
 
   const handleRestart = () => {
