@@ -39,6 +39,7 @@ const WARP_PORTALS = [
 // touch devices keep the closer view for easier movement and readability.
 const FULL_MAZE_ZOOM = 1;
 const DESKTOP_GAMEPLAY_ZOOM = 1.8;
+const TABLET_GAMEPLAY_ZOOM = 1.8;
 const MOBILE_GAMEPLAY_ZOOM = 1.55;
 const INTRO_DURATION_FRAMES = 90;
 
@@ -367,7 +368,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     // Reset monsters based on current level — distinct speeds per personality
     const isMobileDevice = lowPowerDeviceRef.current;
-    gameplayZoomRef.current = isMobileDevice ? MOBILE_GAMEPLAY_ZOOM : DESKTOP_GAMEPLAY_ZOOM;
+    const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
+    gameplayZoomRef.current = isTabletViewport
+      ? TABLET_GAMEPLAY_ZOOM
+      : isMobileDevice
+        ? MOBILE_GAMEPLAY_ZOOM
+        : DESKTOP_GAMEPLAY_ZOOM;
     let chaserSpeed = isMobileDevice ? 1.0 : 1.3;
     let ambusherSpeed = isMobileDevice ? 0.86 : 1.1;
     let wandererSpeed = isMobileDevice ? 0.74 : 0.9;
