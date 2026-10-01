@@ -249,10 +249,16 @@
   .results-stat-card > img { top: clamp(-22px, -4vw, -12px); height: clamp(27px, 8vw, 48px); }
   .results-stat-card--coins { transform: translateY(5px); }
   .results-stat-card--coins > img { height: clamp(31px, 9vw, 54px); }
-  .results-stat-card strong { font-size: clamp(1.1rem, 5vw, 1.85rem); }
+  .results-stat-card strong { font-size: clamp(1.35rem, 7vw, 2.8rem); }
   .results-stat-card span { font-size: clamp(.65rem, 3.2vw, 1.1rem); }
   .results-actions { width: min(88vw, 680px); gap: clamp(6px, 3vw, 16px); }
   .results-action { max-width: 320px; }
+}
+
+/* Keep the three headline values prominent on compact tablets and phones. */
+@media (min-width: 621px) and (max-width: 800px) {
+  .results-stat-card strong { font-size: clamp(1.35rem, 7vw, 2.8rem); }
+  .results-stat-card span { font-size: clamp(.78rem, 3.4vw, 1.25rem); }
 }
 
 @media (max-height: 520px) {
@@ -266,7 +272,7 @@
   .results-stat-card > img { top: clamp(-18px, -3.5dvh, -9px); height: clamp(24px, 7dvh, 42px); }
   .results-stat-card--coins > img { height: clamp(28px, 8dvh, 48px); }
   .results-stat-card--coins { transform: translateY(4px); }
-  .results-stat-card strong { font-size: clamp(1rem, min(3.5vw, 4vh), 1.8rem); }
+  .results-stat-card strong { font-size: clamp(1.2rem, min(5.8vw, 5.2vh), 2.2rem); }
   .results-stat-card span { font-size: clamp(.6rem, min(2.4vw, 2.8vh), 1rem); }
   .results-actions { width: min(86vw, 560px); gap: 8px; }
 }
