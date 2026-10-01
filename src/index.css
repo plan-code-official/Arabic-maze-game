@@ -394,6 +394,55 @@ body.game-active #root {
   }
 }
 
+/* Keep the question card readable on wider layouts, even when a question has
+   a long Arabic prompt plus image and audio. */
+@media (min-width: 768px) {
+  .question-panel {
+    padding: clamp(10px, 1vw, 16px) !important;
+  }
+
+  .question-content {
+    justify-content: flex-start;
+    gap: clamp(6px, 0.8vw, 12px);
+    padding: 4px 2px clamp(12px, 1.2vw, 18px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .question-image-wrap {
+    flex: 0 1 auto;
+    max-height: 42%;
+  }
+
+  .question-text {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 34%;
+    padding: clamp(8px, 0.9vw, 14px) !important;
+    font-size: clamp(1.15rem, min(1.8vw, 2.6vh), 1.7rem) !important;
+    line-height: 1.15;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-line-clamp: unset;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .question-audio {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  .question-audio svg {
+    width: clamp(42px, 5vw, 68px);
+    height: clamp(42px, 5vw, 68px);
+    max-width: none;
+    max-height: none;
+  }
+}
+
 /* Glassmorphism Classes */
 .glass-panel {
   background: var(--bg-card);
