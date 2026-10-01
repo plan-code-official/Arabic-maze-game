@@ -1,5 +1,6 @@
 import React from 'react';
 import './GameWelcomeScreen.css';
+import { handleExitSite as defaultExitSite } from '../../utils/navigation';
 
 interface GameWelcomeScreenProps {
   backgroundImage?: string;
@@ -36,10 +37,7 @@ export default function GameWelcomeScreen({
   isLoading = false,
   isReady = true,
 }: GameWelcomeScreenProps) {
-  const handleExit = onExit || (() => {
-    if (window.history.length > 1) window.history.back();
-    else window.location.href = '/';
-  });
+  const handleExit = onExit || defaultExitSite;
 
   const startDisabled = isLoading || !isReady;
 
