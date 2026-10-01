@@ -26,7 +26,9 @@
   flex: 0 0 auto;
   align-self: flex-start;
   width: clamp(160px, 18vw, 250px);
-  margin-inline-end: auto;
+  /* Physical margins keep this stats pill left-anchored in RTL layouts. */
+  margin-right: auto;
+  margin-left: 0;
   z-index: 1;
 }
 
