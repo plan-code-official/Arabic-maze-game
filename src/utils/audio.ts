@@ -1,7 +1,13 @@
 // Web Audio API Synthesizer for Game Sound Effects
+import portalSoundUrl from '../assets/sound1.mp3';
 
 class AudioSynth {
   private ctx: AudioContext | null = null;
+  private portalSound = new Audio(portalSoundUrl);
+
+  constructor() {
+    this.portalSound.preload = 'auto';
+  }
 
   private initCtx() {
     if (!this.ctx) {
@@ -203,7 +209,15 @@ class AudioSynth {
       console.warn('Audio play failed', e);
     }
   }
+
+  playPortalTeleport() {
+    try {
+      this.portalSound.currentTime = 0;
+      void this.portalSound.play().catch(() => undefined);
+    } catch (e) {
+      console.warn('Portal sound play failed', e);
+    }
+  }
 }
 
 export const gameAudio = new AudioSynth();
-
