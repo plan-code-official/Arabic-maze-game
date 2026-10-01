@@ -203,18 +203,19 @@
 .results-actions {
   flex: 0 0 auto;
   width: min(88vw, 680px, calc(min(64dvh, 550px) * 1496 / 965));
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
   gap: clamp(8px, 4vw, 44px);
   direction: rtl;
   animation: resultsItemIn 510ms 340ms ease-out both;
 }
 
 .results-action {
-  flex: 1 1 0;
-  width: 0;
-  max-width: 320px;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
   min-width: 0;
   aspect-ratio: 565 / 231;
   padding: 0;
@@ -254,7 +255,7 @@
   .results-stat-card strong { font-size: clamp(1.35rem, 7vw, 2.8rem); }
   .results-stat-card span { font-size: clamp(.65rem, 3.2vw, 1.1rem); }
   .results-actions { width: min(88vw, 680px); gap: clamp(6px, 3vw, 16px); }
-  .results-action { max-width: 320px; }
+  .results-action { max-width: none; }
 }
 
 /* Keep the three headline values prominent on compact tablets and phones. */
