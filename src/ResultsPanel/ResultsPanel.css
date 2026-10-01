@@ -202,11 +202,11 @@
 
 .results-actions {
   flex: 0 0 auto;
-  width: min(88vw, 680px, calc(min(64dvh, 550px) * 1496 / 965));
+  width: min(100%, clamp(280px, 38vw, 720px));
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: clamp(8px, 4vw, 44px);
+  gap: clamp(8px, 2vw, 20px);
   direction: rtl;
   animation: resultsItemIn 510ms 340ms ease-out both;
 }
@@ -254,7 +254,7 @@
   .results-stat-card--coins > img { height: clamp(31px, 9vw, 54px); }
   .results-stat-card strong { font-size: clamp(1.35rem, 7vw, 2.8rem); }
   .results-stat-card span { font-size: clamp(.65rem, 3.2vw, 1.1rem); }
-  .results-actions { width: min(88vw, 680px); gap: clamp(6px, 3vw, 16px); }
+  .results-actions { width: min(100%, clamp(280px, 38vw, 720px)); gap: clamp(8px, 2vw, 20px); }
   .results-action { max-width: none; }
 }
 
@@ -277,7 +277,7 @@
   .results-stat-card--coins { transform: translateY(4px); }
   .results-stat-card strong { font-size: clamp(1.35rem, min(6.2vw, 5.8vh), 2.4rem); }
   .results-stat-card span { font-size: clamp(.72rem, min(2.8vw, 3vh), 1.1rem); }
-  .results-actions { width: min(86vw, 560px); gap: 8px; }
+  .results-actions { width: min(100%, clamp(230px, 45vw, 440px)); gap: clamp(8px, 2vw, 20px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

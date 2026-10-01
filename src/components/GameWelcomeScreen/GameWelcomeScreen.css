@@ -106,8 +106,7 @@
 .gws-footer {
   flex: 0 0 auto;
   align-self: center;
-  /* Match ResultsPanel .results-actions exactly. */
-  width: min(88vw, 680px, calc(min(64dvh, 550px) * 1496 / 965));
+  width: min(100%, clamp(280px, 38vw, 720px));
   padding-bottom: max(0px, env(safe-area-inset-bottom));
 }
 
@@ -115,7 +114,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: clamp(8px, 4vw, 44px);
+  gap: clamp(8px, 2vw, 20px);
   width: 100%;
 }
 
@@ -165,7 +164,7 @@
   .gws-stat-text,
   .gws-stat-equals { font-size: clamp(14px, 2.8vw, 18px); }
   .gws-stat-icon { width: clamp(15px, 3vw, 21px); }
-  .gws-footer { width: min(86vw, 560px); }
+  .gws-footer { width: min(100%, clamp(230px, 45vw, 440px)); }
   .gws-body { overflow-y: auto; overflow-x: hidden; }
   .gws-description-art { max-height: min(48dvh, 360px, 100%); }
 }
