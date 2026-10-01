@@ -42,6 +42,7 @@ const DESKTOP_GAMEPLAY_ZOOM = 1.8;
 const TABLET_GAMEPLAY_ZOOM = 1.8;
 const MOBILE_GAMEPLAY_ZOOM = 1.55;
 const PLAYER_MOVE_SPEED = 1.25;
+const ENEMY_SPEED_RATIO = 0.3;
 const INTRO_DURATION_FRAMES = 90;
 
 // Room Centers & Colors
@@ -80,7 +81,6 @@ interface MazeCanvasProps {
 }
 
 export const MazeCanvas: React.FC<MazeCanvasProps> = ({
-  level,
   words,
   correctWord,
   onCorrect,
@@ -367,31 +367,17 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       zoom: FULL_MAZE_ZOOM
     };
 
-    // Reset monsters based on current level — distinct speeds per personality
+    // Keep enemies at a predictable fraction of the player's movement speed.
     const isMobileDevice = lowPowerDeviceRef.current;
     const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
-    const isEasyDevice = isMobileDevice || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches);
     gameplayZoomRef.current = isTabletViewport
       ? TABLET_GAMEPLAY_ZOOM
       : isMobileDevice
         ? MOBILE_GAMEPLAY_ZOOM
         : DESKTOP_GAMEPLAY_ZOOM;
-    let chaserSpeed = isEasyDevice ? 0.78 : 1.3;
-    let ambusherSpeed = isEasyDevice ? 0.66 : 1.1;
-    let wandererSpeed = isEasyDevice ? 0.56 : 0.9;
-    if (level >= 2 && level <= 4) {
-      chaserSpeed = isEasyDevice ? 0.84 : 1.4;
-      ambusherSpeed = isEasyDevice ? 0.72 : 1.2;
-      wandererSpeed = isEasyDevice ? 0.62 : 1.0;
-    } else if (level >= 5) {
-      chaserSpeed = isEasyDevice ? 0.9 : 1.5;
-      ambusherSpeed = isEasyDevice ? 0.78 : 1.3;
-      wandererSpeed = isEasyDevice ? 0.68 : 1.1;
-    }
-
-    // Keep the cyan ambusher as tactically distinct as the red chaser, but
-    // give both enemies the same movement difficulty at every level/device.
-    ambusherSpeed = chaserSpeed;
+    const chaserSpeed = PLAYER_MOVE_SPEED * ENEMY_SPEED_RATIO;
+    const ambusherSpeed = chaserSpeed;
+    const wandererSpeed = chaserSpeed * 0.9;
 
     ghostModeRef.current = 'scatter';
     ghostTimerRef.current = Date.now();
