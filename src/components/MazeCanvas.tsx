@@ -35,10 +35,13 @@ const WARP_PORTALS = [
   { x: 9, y: 18, targetX: 9, targetY: 1, exitDir: 'down', color: '#ff007f' }
 ];
 
-// The canvas is rendered at 2x resolution, so 1.55 shows roughly two-thirds
-// of the maze while still keeping the player and nearby paths readable.
+// Desktop gets a wider camera so both side caves can be visible together;
+// touch devices keep the closer view for easier movement and readability.
 const FULL_MAZE_ZOOM = 1;
-const GAMEPLAY_ZOOM = 1.55;
+const DESKTOP_GAMEPLAY_ZOOM = 1.8;
+const TABLET_GAMEPLAY_ZOOM = 1.8;
+const MOBILE_GAMEPLAY_ZOOM = 1.55;
+const PLAYER_MOVE_SPEED = 1.25;
 const INTRO_DURATION_FRAMES = 90;
 
 // Room Centers & Colors
@@ -127,7 +130,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     gridY: 9,
     targetX: 9,
     targetY: 9,
-    speed: 2,
+    speed: PLAYER_MOVE_SPEED,
     dir: 'none',
     nextDir: 'none',
     invincibleFrames: 0,
@@ -143,7 +146,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   // Local state for wrong room cooldowns to prevent double triggers
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
-  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: GAMEPLAY_ZOOM });
+  const gameplayZoomRef = useRef(DESKTOP_GAMEPLAY_ZOOM);
+  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: DESKTOP_GAMEPLAY_ZOOM });
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
   const introRef = useRef<{ active: boolean, progress: number }>({ active: true, progress: 0 });
   const frameCountRef = useRef(0);
@@ -350,7 +354,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       gridY: 9,
       targetX: 9,
       targetY: 9,
-      speed: 2.5,
+      speed: PLAYER_MOVE_SPEED,
       dir: 'none',
       nextDir: 'none',
       invincibleFrames: 120, // 2 seconds safety on level start
@@ -365,18 +369,29 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     // Reset monsters based on current level — distinct speeds per personality
     const isMobileDevice = lowPowerDeviceRef.current;
-    let chaserSpeed = isMobileDevice ? 1.0 : 1.3;
-    let ambusherSpeed = isMobileDevice ? 0.86 : 1.1;
-    let wandererSpeed = isMobileDevice ? 0.74 : 0.9;
+    const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
+    const isEasyDevice = isMobileDevice || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches);
+    gameplayZoomRef.current = isTabletViewport
+      ? TABLET_GAMEPLAY_ZOOM
+      : isMobileDevice
+        ? MOBILE_GAMEPLAY_ZOOM
+        : DESKTOP_GAMEPLAY_ZOOM;
+    let chaserSpeed = isEasyDevice ? 0.78 : 1.3;
+    let ambusherSpeed = isEasyDevice ? 0.66 : 1.1;
+    let wandererSpeed = isEasyDevice ? 0.56 : 0.9;
     if (level >= 2 && level <= 4) {
-      chaserSpeed = isMobileDevice ? 1.08 : 1.4;
-      ambusherSpeed = isMobileDevice ? 0.92 : 1.2;
-      wandererSpeed = isMobileDevice ? 0.8 : 1.0;
+      chaserSpeed = isEasyDevice ? 0.84 : 1.4;
+      ambusherSpeed = isEasyDevice ? 0.72 : 1.2;
+      wandererSpeed = isEasyDevice ? 0.62 : 1.0;
     } else if (level >= 5) {
-      chaserSpeed = isMobileDevice ? 1.16 : 1.5;
-      ambusherSpeed = isMobileDevice ? 0.98 : 1.3;
-      wandererSpeed = isMobileDevice ? 0.86 : 1.1;
+      chaserSpeed = isEasyDevice ? 0.9 : 1.5;
+      ambusherSpeed = isEasyDevice ? 0.78 : 1.3;
+      wandererSpeed = isEasyDevice ? 0.68 : 1.1;
     }
+
+    // Keep the cyan ambusher as tactically distinct as the red chaser, but
+    // give both enemies the same movement difficulty at every level/device.
+    ambusherSpeed = chaserSpeed;
 
     ghostModeRef.current = 'scatter';
     ghostTimerRef.current = Date.now();
@@ -513,6 +528,27 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
+
+    const resizeCanvas = () => {
+      const bounds = containerRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+
+      // Keep a 2x backing buffer for crisp pixel art while letting the CSS
+      // canvas fill the complete responsive maze wrapper.
+      const nextWidth = Math.max(1, Math.floor(bounds.width * 2));
+      const nextHeight = Math.max(1, Math.floor(bounds.height * 2));
+      if (canvas.width !== nextWidth) canvas.width = nextWidth;
+      if (canvas.height !== nextHeight) canvas.height = nextHeight;
+    };
+
+    resizeCanvas();
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(resizeCanvas)
+      : null;
+    if (resizeObserver && containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
 
     const updateGame = () => {
       if (isPaused || lives <= 0) return;
@@ -581,7 +617,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             player.dir = desiredDir;
             player.targetX = player.gridX + dX;
             player.targetY = player.gridY + dY;
-            gameAudio.playMove();
           } else {
             player.dir = 'none';
           }
@@ -597,8 +632,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       camera.y += (player.y - camera.y) * camLerp;
 
       const zoom = camera.zoom;
-      const visibleWidth = (19 * cellSize) / zoom;
-      const visibleHeight = (19 * cellSize) / zoom;
+      const visibleWidth = Math.min(19 * cellSize, canvas.width / (2 * zoom));
+      const visibleHeight = Math.min(19 * cellSize, canvas.height / (2 * zoom));
       const minX = visibleWidth / 2;
       const maxX = (19 * cellSize) - minX;
       const minY = visibleHeight / 2;
@@ -818,7 +853,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       ctx.save();
       ctx.scale(2, 2);
       const zoom = cameraRef.current.zoom;
-      ctx.translate((19 * cellSize) / 2, (19 * cellSize) / 2);
+      ctx.translate(canvas.width / 4, canvas.height / 4);
       ctx.scale(zoom, zoom);
       ctx.translate(-cameraRef.current.x, -cameraRef.current.y);
 
@@ -827,7 +862,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
       // Draw cached static background
       if (bgCanvasRef.current) {
-        ctx.drawImage(bgCanvasRef.current, 0, 0);
+        ctx.drawImage(bgCanvasRef.current, 0, 0, 19 * cellSize, 19 * cellSize);
       }
 
       // 2.5 Draw Warp Portals
@@ -1087,7 +1122,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         // Easing cubic out
         const easeRatio = 1 - Math.pow(1 - ratio, 3);
-        cameraRef.current.zoom = GAMEPLAY_ZOOM + (6.0 - GAMEPLAY_ZOOM) * easeRatio;
+        const gameplayZoom = gameplayZoomRef.current;
+        cameraRef.current.zoom = gameplayZoom + (6.0 - gameplayZoom) * easeRatio;
 
         // Pull camera heavily towards player during zoom
         const player = playerRef.current;
@@ -1096,18 +1132,18 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         if (p >= maxFrames) {
           celebrationRef.current = null;
-          cameraRef.current.zoom = GAMEPLAY_ZOOM; // reset
+          cameraRef.current.zoom = gameplayZoom; // reset
           onCorrect();
         }
       } else if (introRef.current.active) {
         introRef.current.progress++;
         const ratio = Math.min(introRef.current.progress / INTRO_DURATION_FRAMES, 1);
         const easeRatio = 1 - Math.pow(1 - ratio, 3);
-        cameraRef.current.zoom = FULL_MAZE_ZOOM + (GAMEPLAY_ZOOM - FULL_MAZE_ZOOM) * easeRatio;
+        cameraRef.current.zoom = FULL_MAZE_ZOOM + (gameplayZoomRef.current - FULL_MAZE_ZOOM) * easeRatio;
 
         if (ratio >= 1) {
           introRef.current.active = false;
-          cameraRef.current.zoom = GAMEPLAY_ZOOM;
+          cameraRef.current.zoom = gameplayZoomRef.current;
         }
       } else {
         updateGame();
@@ -1121,6 +1157,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     return () => {
       cancelAnimationFrame(animationId);
+      resizeObserver?.disconnect();
     };
   }, [isPaused, lives, words, correctWord]);
 

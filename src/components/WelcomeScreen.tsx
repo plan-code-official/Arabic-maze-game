@@ -15,13 +15,15 @@ interface WelcomeScreenProps {
   isLoading: boolean;
   error: string | null;
   onStart: () => void;
+  onExit?: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   totalQuestions,
   isLoading,
   error,
-  onStart
+  onStart,
+  onExit,
 }) => {
   const handleStart = () => {
     gameAudio.playCorrect();
@@ -40,11 +42,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       statRightValue={xpCount}
       statRightIcon={DaddCoin}
       statRightAlt="Dadd Points"
-      heroImage={DescriptionImg}
-      heroAlt="How to Play"
+      descriptionImage={DescriptionImg}
       startButtonImage={startBtn}
       exitButtonImage={exitBtn}
       onStart={handleStart}
+      onExit={onExit}
       isLoading={isLoading}
       isReady={isReady}
     />

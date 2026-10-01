@@ -4,6 +4,7 @@ import { GameScreen } from './components/GameScreen';
 import { VictoryModal } from './components/VictoryModal';
 import { QUESTIONS, type Question } from './data/questions';
 import { gameAudio } from './utils/audio';
+import { handleExitSite } from './utils/navigation';
  
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
 
@@ -314,6 +315,7 @@ function App() {
       {view === 'welcome' && (
         <WelcomeScreen 
           onStart={handleStartGame} 
+          onExit={handleExitSite}
           totalQuestions={apiQuestions.length}
           isLoading={isLoading}
           error={error}
@@ -329,7 +331,7 @@ function App() {
           onCorrectAnswer={handleCorrectAnswer}
           onWrongAnswer={handleWrongAnswer}
           onLoseLife={handleLoseLife}
-          onBackToWelcome={() => setView('welcome')}
+          onBackToWelcome={handleExitSite}
         />
       )}
 
@@ -342,7 +344,7 @@ function App() {
           wrongAnswers={answersList.filter(a => !a.isCorrect).length}
           victoryData={victoryData}
           onRestart={handleStartGame}
-          onHome={() => setView('welcome')}
+          onHome={handleExitSite}
         />
       )}
     </div>
