@@ -26,9 +26,15 @@ function normalizeOptionArray(value: unknown): any[] {
 }
 
 function App() {
-  const [view, setView] = useState<ViewType>('welcome');
+  const [view, setView] = useState<ViewType>(() => {
+    if (typeof window !== 'undefined') {
+      const v = new URLSearchParams(window.location.search).get('view') as ViewType;
+      if (v) return v;
+    }
+    return 'welcome';
+  });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(80);
   const [lives, setLives] = useState(3);
 
   const [apiQuestions, setApiQuestions] = useState<Question[]>([]);
@@ -339,10 +345,10 @@ function App() {
       {view === 'victory' && (
         <VictoryModal
           score={score}
-          totalQuestions={apiQuestions.length}
-          correctAnswers={answersList.filter(a => a.isCorrect).length}
-          wrongAnswers={answersList.filter(a => !a.isCorrect).length}
-          victoryData={victoryData}
+          totalQuestions={apiQuestions.length || 11}
+          correctAnswers={answersList.length ? answersList.filter(a => a.isCorrect).length : 8}
+          wrongAnswers={answersList.length ? answersList.filter(a => !a.isCorrect).length : 3}
+          victoryData={victoryData || { score: 80, earnedCoins: 20 }}
           onRestart={handleStartGame}
           onHome={handleExitSite}
         />

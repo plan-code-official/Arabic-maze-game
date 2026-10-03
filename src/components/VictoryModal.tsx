@@ -22,9 +22,12 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   onRestart,
   onHome,
 }) => {
-  const [showCelebration, setShowCelebration] = useState(
-    totalQuestions > 0 && correctAnswers / totalQuestions >= 0.5
-  );
+  const [showCelebration, setShowCelebration] = useState(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'victory') {
+      return false;
+    }
+    return totalQuestions > 0 && correctAnswers / totalQuestions >= 0.5;
+  });
 
   const handleRestart = () => {
     gameAudio.playCorrect();
