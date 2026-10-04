@@ -1205,13 +1205,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       style={{ touchAction: 'none' }}
-      className="maze-canvas-shell relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none w-full h-auto lg:w-auto lg:h-full aspect-square max-w-full max-h-full cursor-crosshair"
+      className="maze-canvas-shell relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none w-full h-full cursor-crosshair"
     >
       <canvas
         ref={canvasRef}
         width={19 * cellSize * 2}
         height={19 * cellSize * 2}
-        className="block max-w-full max-h-full h-auto"
+        className="block w-full h-full"
         style={{ imageRendering: 'pixelated' }}
       />
     </div>

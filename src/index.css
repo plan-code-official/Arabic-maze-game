@@ -413,8 +413,8 @@ body.game-active #root {
   }
 
   .maze-canvas-shell {
-    width: min(100%, calc(100dvh - 220px));
-    height: auto !important;
+    width: 100%;
+    height: 100% !important;
     max-width: none;
     max-height: none;
   }
