@@ -232,6 +232,7 @@ body.game-active #root {
 
 .question-panel {
   min-height: 0;
+  container-type: inline-size;
 }
 
 .question-content {
@@ -310,8 +311,8 @@ body.game-active #root {
   overflow: hidden;
   overflow-wrap: anywhere;
   word-break: normal;
-  font-size: clamp(0.95rem, min(2.5vw, 3.4vh), 2rem) !important;
-  line-height: 1.2;
+  font-size: clamp(1.4rem, 9cqw, 3.5rem) !important;
+  line-height: 1.25;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -375,6 +376,7 @@ body.game-active #root {
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: normal;
+    font-size: clamp(2rem, 15cqw, 5rem) !important;
   }
 
   .maze-column {
@@ -517,8 +519,8 @@ body.game-active #root {
 
   .question-text {
     max-height: 38%;
-    font-size: clamp(0.9rem, 4vw, 1.3rem) !important;
-    line-height: 1.2;
+    font-size: clamp(1.1rem, 8cqw, 1.9rem) !important;
+    line-height: 1.25;
   }
 
   .question-audio svg {
@@ -641,8 +643,8 @@ body.game-active #root {
     min-height: 0;
     max-height: 34%;
     padding: clamp(8px, 0.9vw, 14px) !important;
-    font-size: clamp(1.15rem, min(1.8vw, 2.6vh), 1.7rem) !important;
-    line-height: 1.15;
+    font-size: clamp(1.6rem, 11cqw, 3rem) !important;
+    line-height: 1.25;
     display: block;
     overflow-y: auto;
     overflow-x: hidden;
@@ -1295,4 +1297,10 @@ body.game-active #root {
 
 .cairo {
   font-family: "Cairo", sans-serif;
+}
+
+@media (min-width: 1024px) {
+  .question-text {
+    font-size: clamp(2rem, 15cqw, 5rem) !important;
+  }
 }

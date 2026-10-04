@@ -988,8 +988,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         const textX = room.x * cellSize + cellSize / 2;
         const textY = room.y * cellSize + cellSize / 2;
         const answerText = words[room.id] || '';
-        const maxTextWidth = cellSize * 2.65;
-        let fontSize = Math.min(18, cellSize * 0.55);
+        const maxTextWidth = cellSize * 2.8;
+        let fontSize = Math.min(24, cellSize * 0.75);
 
         ctx.font = `bold ${fontSize}px FontGame`;
         while (fontSize > 9 && ctx.measureText(answerText).width > maxTextWidth) {
