@@ -29,7 +29,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 }) => {
   const currentQuestion = questions[currentQuestionIndex];
   const hasQuestionImage = Boolean(currentQuestion?.image);
-  const hasQuestionText = Boolean(currentQuestion?.questionText?.trim());
+  const hasQuestionText = Boolean(currentQuestion?.questionText?.trim() && currentQuestion.questionText.trim() !== '.');
   const hasQuestionAudio = Boolean(currentQuestion?.audioUrl);
   const questionLayout = `${hasQuestionImage ? 'image-' : ''}${hasQuestionText ? 'text-' : ''}${hasQuestionAudio ? 'audio' : ''}`.replace(/-$/, '');
 
@@ -160,7 +160,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 </div>
               )}
 
-              {currentQuestion.questionText && (
+              {hasQuestionText && (
                 <div className="question-text text-xl sm:text-2xl lg:text-3xl text-white font-black text-center leading-relaxed shrink-0 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-white/10 w-full relative z-10 shadow-lg">
                   {currentQuestion.questionText}
                 </div>
