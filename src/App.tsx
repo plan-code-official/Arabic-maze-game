@@ -125,8 +125,6 @@ function App() {
 
         const isDevelopment = import.meta.env.MODE === 'development';
 
-        const isDevelopment = import.meta.env.MODE === 'development';
-
         if (!lessonId) {
           if (isDevelopment) {
             console.warn('Development mode: Missing URL parameters. Using mock evaluationId ("dev-evaluation") and accessCode ("dev-test"). Skipping API fetch and using local mock questions.');
