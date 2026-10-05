@@ -44,6 +44,72 @@ function App() {
   // Session State
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const latestTokenRef = useRef<string | null>(null);
+
+  const refreshAccessToken = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      
+      // 1. Attempt Student Refresh
+      let refreshRes = await fetch(`${baseUrl}/api/v1/student/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: "{}",
+        credentials: 'include',
+      });
+
+      // 2. Fallback to Supervisor/Auth Refresh if unauthorized
+      if (!refreshRes.ok) {
+        refreshRes = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: "{}",
+          credentials: 'include',
+        });
+      }
+
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json();
+        const newToken = refreshData?.data?.accessToken || refreshData?.data?.token || refreshData?.accessToken || refreshData?.token;
+        if (newToken) {
+          console.log("Token refreshed successfully.");
+          setSessionToken(newToken);
+          latestTokenRef.current = newToken;
+          return newToken;
+        }
+      } else {
+        console.error("Token refresh failed on both endpoints with status", refreshRes.status);
+      }
+    } catch (err) {
+      console.error("Error during token refresh", err);
+    }
+    return null;
+  };
+
+  const apiFetch = async (url: string, options: RequestInit = {}) => {
+    let currentToken = latestTokenRef.current;
+    if (!currentToken) {
+      currentToken = await refreshAccessToken();
+    }
+    
+    const fetchOptions = { ...options };
+    if (currentToken) {
+      fetchOptions.headers = { ...(fetchOptions.headers || {}), Authorization: `Bearer ${currentToken}` };
+    }
+
+    let res = await fetch(url, fetchOptions);
+
+    if (res.status === 401) {
+      console.warn("401 Unauthorized encountered. Attempting to refresh token...");
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        fetchOptions.headers = { ...(fetchOptions.headers || {}), Authorization: `Bearer ${newToken}` };
+        res = await fetch(url, fetchOptions);
+      }
+    }
+    
+    return res;
+  };
   const [answersList, setAnswersList] = useState<any[]>([]);
   const answersRef = useRef<any[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
@@ -59,7 +125,9 @@ function App() {
 
         const isDevelopment = import.meta.env.MODE === 'development';
 
-        if (!lessonId || !token) {
+        const isDevelopment = import.meta.env.MODE === 'development';
+
+        if (!lessonId) {
           if (isDevelopment) {
             console.warn('Development mode: Missing URL parameters. Using mock evaluationId ("dev-evaluation") and accessCode ("dev-test"). Skipping API fetch and using local mock questions.');
             
@@ -74,21 +142,17 @@ function App() {
           return;
         }
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
         // 1. Create Session
         try {
-          const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/1/sessions?lessonId=${lessonId}`, {
+          const sessionRes = await apiFetch(`${baseUrl}/api/v1/student/games/1/sessions?lessonId=${lessonId}`, {
             method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
           });
           if (sessionRes.ok) {
             const sData = await sessionRes.json();
             if (sData?.data?.id) {
               setSessionId(sData.data.id);
-              setSessionToken(token);
             }
           }
         } catch (e) {
@@ -96,11 +160,7 @@ function App() {
         }
 
         // 2. Fetch Questions
-        const response = await fetch(`${baseUrl}/api/v1/student/games/1/questions?lessonId=${lessonId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await apiFetch(`${baseUrl}/api/v1/student/games/1/questions?lessonId=${lessonId}`);
 
         if (!response.ok) {
           throw new Error('فشل في جلب البيانات من الخادم.');
@@ -210,24 +270,20 @@ function App() {
     setView('victory');
 
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       // Submit Answers
-      await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
+      await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`
         },
         body: JSON.stringify({ answers: finalAnswers })
       });
 
       // Complete Session
-      const completeRes = await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
+      const completeRes = await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${sessionToken}`
-        }
       });
 
       if (completeRes.ok) {
