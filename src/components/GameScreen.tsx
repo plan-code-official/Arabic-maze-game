@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Volume2, Music, Target } from 'lucide-react';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
@@ -44,6 +44,60 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
+  // Auto-fit: grow question text to the largest size that still fits its box.
+  const questionTextRef = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const el = questionTextRef.current;
+    if (!el) return;
+    const fit = () => {
+      let lo = 12;
+      let hi = 600;
+      while (hi - lo > 1) {
+        const mid = Math.floor((lo + hi) / 2);
+        el.style.setProperty('font-size', `${mid}px`, 'important');
+        if (el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1) lo = mid;
+        else hi = mid;
+      }
+      el.style.setProperty('font-size', `${lo}px`, 'important');
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (el.parentElement) ro.observe(el.parentElement);
+    window.addEventListener('resize', fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', fit);
+    };
+  }, [currentQuestionIndex, hasQuestionText, hasQuestionImage, hasQuestionAudio]);
+
+  const [isTabHidden, setIsTabHidden] = useState(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsTabHidden(document.hidden);
+    };
+
+    const handleBlur = () => {
+      setIsTabHidden(true);
+    };
+
+    const handleFocus = () => {
+      if (!document.hidden) {
+        setIsTabHidden(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.add('game-active');
@@ -161,7 +215,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               )}
 
               {hasQuestionText && (
-                <div className="question-text text-xl sm:text-2xl lg:text-3xl text-white font-black text-center leading-relaxed shrink-0 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-white/10 w-full relative z-10 shadow-lg">
+                <div ref={questionTextRef} className="question-text text-white font-black text-center w-full relative z-10">
                   {currentQuestion.questionText}
                 </div>
               )}
@@ -181,14 +235,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                     onClick={toggleAudio}
                     style={{ background: 'transparent', border: 'none', outline: 'none' }}
                     aria-label={isPlayingAudio ? 'إيقاف الصوت' : 'تشغيل الصوت'}
-                    className={`appearance-none bg-transparent border-none outline-none focus:outline-none shadow-none transition-all duration-300 transform active:scale-90 hover:scale-110 ${isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
+                    className={`appearance-none bg-transparent border-none outline-none focus:outline-none shadow-none transition-transform duration-300 active:scale-95 hover:scale-105 ${isPlayingAudio ? 'opacity-90' : 'question-audio-float'
                       }`}
                   >
-                    <div className={`filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
+                    <div className={`filter drop-shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
                       {isPlayingAudio ? (
-                        <Music className="w-14 h-14 sm:w-20 sm:h-20 lg:w-28 lg:h-28" />
+                        <Music className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20" />
                       ) : (
-                        <Volume2 className="w-14 h-14 sm:w-20 sm:h-20 lg:w-28 lg:h-28" />
+                        <Volume2 className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20" />
                       )}
                     </div>
                   </button>
@@ -217,7 +271,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             onWrong={handleWrong}
             onLoseLife={onLoseLife}
             lives={lives}
-            isPaused={false}
+            isPaused={Boolean(zoomedImage) || isTabHidden}
             externalDirection={extDir}
           />
         </div>

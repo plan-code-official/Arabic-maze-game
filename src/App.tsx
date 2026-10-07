@@ -2,9 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { GameScreen } from './components/GameScreen';
 import { VictoryModal } from './components/VictoryModal';
+import { ErrorScreen } from './components/ErrorScreen';
 import { QUESTIONS, type Question } from './data/questions';
 import { gameAudio } from './utils/audio';
 import { handleExitSite } from './utils/navigation';
+import celebrationRobots from './Celebration/assets/celbr.png';
+import panelArt from './assets/results-panel-empty.png';
+import celebrationTitle from './ResultsPanel/assets/good.png';
+import exitButtonImage from './assets/Exit.png';
+import retryButtonImage from './assets/Retry.png';
  
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
 
@@ -43,47 +49,88 @@ function App() {
 
   // Session State
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Preload Celebration, Results Panel, and Question assets upfront
+  useEffect(() => {
+    const assets = [
+      celebrationRobots,
+      panelArt,
+      celebrationTitle,
+      exitButtonImage,
+      retryButtonImage,
+    ];
+    assets.forEach((src) => {
+      if (src) {
+        const img = new Image();
+        img.src = src;
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (apiQuestions.length > 0) {
+      apiQuestions.forEach((q) => {
+        if (q.image) {
+          const img = new Image();
+          img.src = q.image;
+        }
+      });
+    }
+  }, [apiQuestions]);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const latestTokenRef = useRef<string | null>(null);
 
-  const refreshAccessToken = async () => {
+  const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
+  const refreshEndpointRef = useRef<string | null>(null);
+
+  const doRefresh = async (): Promise<string | null> => {
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      
-      // 1. Attempt Student Refresh
-      let refreshRes = await fetch(`${baseUrl}/api/v1/student/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: "{}",
-        credentials: 'include',
-      });
+      const endpoints = ['/api/v1/student/refresh', '/api/v1/auth/refresh'];
+      // Use only the endpoint that worked last time to avoid duplicate calls
+      const order = refreshEndpointRef.current ? [refreshEndpointRef.current] : endpoints;
 
-      // 2. Fallback to Supervisor/Auth Refresh if unauthorized
-      if (!refreshRes.ok) {
-        refreshRes = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+      let refreshRes: Response | null = null;
+      let usedEndpoint: string | null = null;
+      for (const ep of order) {
+        refreshRes = await fetch(`${baseUrl}${ep}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: "{}",
           credentials: 'include',
         });
+        usedEndpoint = ep;
+        if (refreshRes.ok) break;
       }
 
-      if (refreshRes.ok) {
+      if (refreshRes && refreshRes.ok) {
         const refreshData = await refreshRes.json();
         const newToken = refreshData?.data?.accessToken || refreshData?.data?.token || refreshData?.accessToken || refreshData?.token;
         if (newToken) {
           console.log("Token refreshed successfully.");
+          refreshEndpointRef.current = usedEndpoint;
           setSessionToken(newToken);
           latestTokenRef.current = newToken;
           return newToken;
         }
       } else {
-        console.error("Token refresh failed on both endpoints with status", refreshRes.status);
+        refreshEndpointRef.current = null;
+        console.error("Token refresh failed with status", refreshRes?.status);
       }
     } catch (err) {
       console.error("Error during token refresh", err);
     }
     return null;
+  };
+
+  // Concurrent callers (StrictMode double effects, parallel 401s) share one request
+  const refreshAccessToken = () => {
+    if (!refreshPromiseRef.current) {
+      refreshPromiseRef.current = doRefresh().finally(() => {
+        refreshPromiseRef.current = null;
+      });
+    }
+    return refreshPromiseRef.current;
   };
 
   const apiFetch = async (url: string, options: RequestInit = {}) => {
@@ -115,6 +162,7 @@ function App() {
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [victoryData, setVictoryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -258,6 +306,36 @@ function App() {
     setView('playing');
   };
 
+  // Retry from the results panel: create a brand-new session, then reset everything.
+  const handleRetry = async () => {
+    if (isRestarting) return;
+    setIsRestarting(true);
+
+    // Drop the old (already completed) session so nothing is submitted to it
+    setSessionId(null);
+
+    const lessonId = new URLSearchParams(window.location.search).get('lessonId');
+    if (lessonId) {
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        const sessionRes = await apiFetch(`${baseUrl}/api/v1/student/games/1/sessions?lessonId=${lessonId}`, {
+          method: 'POST',
+        });
+        if (sessionRes.ok) {
+          const sData = await sessionRes.json();
+          if (sData?.data?.id) {
+            setSessionId(sData.data.id);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to create session on retry", e);
+      }
+    }
+
+    handleStartGame();
+    setIsRestarting(false);
+  };
+
   const submitGameSession = async (finalAnswers: any[]) => {
     if (!sessionId || !sessionToken) {
       setView('victory');
@@ -270,14 +348,34 @@ function App() {
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-      // Submit Answers
-      await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ answers: finalAnswers })
-      });
+      // The API requires at least 1 answer. If the player lost all lives to enemies
+      // before entering any room, record one wrong answer for the current question.
+      let answersToSend = finalAnswers;
+      if (answersToSend.length === 0) {
+        const currentQ = apiQuestions[currentQuestionIndex];
+        if (currentQ) {
+          const fallbackAnswer = {
+            questionId: currentQ.id,
+            selectedAnswer: currentQ.distractors?.[0] || 'لم تتم الإجابة',
+            isCorrect: false,
+            timeTaken: Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000)),
+            pointsEarned: 0
+          };
+          answersToSend = [fallbackAnswer];
+          answersRef.current = answersToSend;
+          setAnswersList(answersToSend);
+        }
+      }
+
+      if (answersToSend.length > 0) {
+        await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ answers: answersToSend })
+        });
+      }
 
       // Complete Session
       const completeRes = await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
@@ -355,11 +453,7 @@ function App() {
   };
 
   if (error) {
-    return (
-      <div className="w-screen min-h-screen bg-slate-900 flex items-center justify-center text-white text-2xl font-bold p-8 text-center" dir="rtl">
-        {error}
-      </div>
-    );
+    return <ErrorScreen description={error} onExit={handleExitSite} />;
   }
 
   if (isLoading) {
@@ -403,7 +497,7 @@ function App() {
           correctAnswers={answersList.length ? answersList.filter(a => a.isCorrect).length : 8}
           wrongAnswers={answersList.length ? answersList.filter(a => !a.isCorrect).length : 3}
           victoryData={victoryData || { score: 80, earnedCoins: 20 }}
-          onRestart={handleStartGame}
+          onRestart={handleRetry}
           onHome={handleExitSite}
         />
       )}

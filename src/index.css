@@ -1304,3 +1304,216 @@ body.game-active #root {
     font-size: clamp(2rem, 15cqw, 5rem) !important;
   }
 }
+
+/* ==========================================================================
+   Question Panel Layout Rules (Strict Specs for all combinations)
+   ========================================================================== */
+
+.game-screen .question-panel {
+  padding: clamp(4px, 0.8vw, 10px) !important;
+  overflow: hidden !important;
+}
+
+.game-screen .question-panel .question-content {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+}
+
+.game-screen .question-panel .question-content .question-text {
+  box-sizing: border-box !important;
+  padding: 2px 4px !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.15 !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  -webkit-line-clamp: unset !important;
+  min-height: 0 !important;
+}
+
+.game-screen .question-panel .question-content .question-image-wrap {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  width: 100% !important;
+}
+
+.game-screen .question-panel .question-content .question-image-wrap img {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+.game-screen .question-panel .question-content .question-audio {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  width: 100% !important;
+}
+
+.game-screen .question-panel .question-content .question-audio button {
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.game-screen .question-panel .question-content .question-audio svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* --- 1. Text Only (Full width & height, centered, auto-fit big font) --- */
+.game-screen .question-content--text {
+  justify-content: center !important;
+}
+.game-screen .question-content--text .question-text {
+  flex: 1 1 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+}
+
+/* --- 2. Text + Sound (Text ~80%, Sound ~20%) --- */
+.game-screen .question-content--text-audio .question-text {
+  flex: 0 0 80% !important;
+  height: 80% !important;
+  max-height: 80% !important;
+  width: 100% !important;
+}
+.game-screen .question-content--text-audio .question-audio {
+  flex: 0 0 20% !important;
+  height: 20% !important;
+  max-height: 20% !important;
+  width: 100% !important;
+}
+
+/* --- 3. Text + Image (Text ~70%, Image ~30%) --- */
+.game-screen .question-content--image-text .question-text {
+  flex: 0 0 70% !important;
+  height: 70% !important;
+  max-height: 70% !important;
+  width: 100% !important;
+  order: 2 !important;
+}
+.game-screen .question-content--image-text .question-image-wrap {
+  flex: 0 0 30% !important;
+  height: 30% !important;
+  max-height: 30% !important;
+  width: 100% !important;
+  order: 1 !important;
+}
+
+/* --- 4. Text + Image + Sound (Image & Sound ~40%, Text ~60% centered) --- */
+.game-screen .question-content--image-text-audio .question-text {
+  flex: 0 0 60% !important;
+  height: 60% !important;
+  max-height: 60% !important;
+  width: 100% !important;
+  order: 2 !important;
+}
+.game-screen .question-content--image-text-audio .question-image-wrap {
+  flex: 0 0 25% !important;
+  height: 25% !important;
+  max-height: 25% !important;
+  width: 100% !important;
+  order: 1 !important;
+}
+.game-screen .question-content--image-text-audio .question-audio {
+  flex: 0 0 15% !important;
+  height: 15% !important;
+  max-height: 15% !important;
+  width: 100% !important;
+  order: 3 !important;
+}
+
+/* --- 5. No Text, 1 element (Image only OR Audio only) --- */
+.game-screen .question-content--image {
+  justify-content: center !important;
+}
+.game-screen .question-content--image .question-image-wrap {
+  flex: 1 1 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+}
+
+.game-screen .question-content--audio {
+  justify-content: center !important;
+}
+.game-screen .question-content--audio .question-audio {
+  flex: 1 1 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.game-screen .question-content--audio .question-audio svg {
+  max-width: 96px !important;
+  max-height: 96px !important;
+  width: clamp(52px, 10vw, 88px) !important;
+  height: clamp(52px, 10vw, 88px) !important;
+}
+
+/* --- 6. No Text, 2 elements (Image + Sound) --- */
+.game-screen .question-content--image-audio {
+  justify-content: center !important;
+}
+.game-screen .question-content--image-audio .question-image-wrap {
+  flex: 0 0 65% !important;
+  height: 65% !important;
+  max-height: 65% !important;
+  width: 100% !important;
+}
+.game-screen .question-content--image-audio .question-audio {
+  flex: 0 0 35% !important;
+  height: 35% !important;
+  max-height: 35% !important;
+  width: 100% !important;
+}
+
+/* Subtle float animation for audio button (replaces harsh bounce) */
+@keyframes question-audio-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.question-audio-float {
+  animation: question-audio-float 2.8s ease-in-out infinite;
+}

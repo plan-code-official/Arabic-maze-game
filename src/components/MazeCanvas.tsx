@@ -42,7 +42,7 @@ const DESKTOP_GAMEPLAY_ZOOM = 1.8;
 const TABLET_GAMEPLAY_ZOOM = 1.8;
 // Mobile gets a wider view of the maze so movement feels less cramped and
 // the player can better anticipate nearby paths and enemies.
-const MOBILE_GAMEPLAY_ZOOM = 1.25;
+const MOBILE_GAMEPLAY_ZOOM = 1.0;
 const PLAYER_MOVE_SPEED = 1.25;
 const ENEMY_SPEED_REMAINING_RATIO = 0.7;
 const INTRO_DURATION_FRAMES = 90;
@@ -156,11 +156,25 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   const frameCountRef = useRef(0);
   const lowPowerDeviceRef = useRef(false);
 
+  const pauseStartRef = useRef<number | null>(null);
+
   useEffect(() => {
     lowPowerDeviceRef.current = window.matchMedia(
       '(pointer: coarse), (max-width: 768px), (prefers-reduced-motion: reduce)'
     ).matches;
   }, []);
+
+  useEffect(() => {
+    if (isPaused) {
+      if (pauseStartRef.current === null) {
+        pauseStartRef.current = Date.now();
+      }
+    } else if (pauseStartRef.current !== null) {
+      const pausedDuration = Date.now() - pauseStartRef.current;
+      ghostTimerRef.current += pausedDuration;
+      pauseStartRef.current = null;
+    }
+  }, [isPaused]);
 
   // BFS pathfinding — returns the first direction to move toward target
   const bfsFirstStep = (
