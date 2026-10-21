@@ -85,6 +85,7 @@ interface MazeCanvasProps {
   lives: number;
   isPaused: boolean;
   externalDirection: string | null; // For on-screen controls
+  disableTeleportAnimation?: boolean;
 }
 
 export const MazeCanvas: React.FC<MazeCanvasProps> = ({
@@ -96,7 +97,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   onLoseLife,
   lives,
   isPaused,
-  externalDirection
+  externalDirection,
+  disableTeleportAnimation
 }) => {
   const numWords = words.length;
 
@@ -160,14 +162,37 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
   const frameCountRef = useRef(0);
   const lowPowerDeviceRef = useRef(false);
+  const isTabletRef = useRef(false);
+  const disableTeleportAnimationRef = useRef(disableTeleportAnimation);
+
+  useEffect(() => {
+    disableTeleportAnimationRef.current = disableTeleportAnimation;
+  }, [disableTeleportAnimation]);
 
   const pauseStartRef = useRef<number | null>(null);
 
   useEffect(() => {
-    lowPowerDeviceRef.current = window.matchMedia(
-      '(pointer: coarse), (max-width: 768px), (prefers-reduced-motion: reduce)'
-    ).matches;
+    const updateDeviceModes = () => {
+      if (typeof window !== 'undefined') {
+        lowPowerDeviceRef.current = window.matchMedia(
+          '(pointer: coarse), (max-width: 768px), (prefers-reduced-motion: reduce)'
+        ).matches;
+        isTabletRef.current = window.matchMedia(
+          '(min-width: 768px) and (max-width: 1023px)'
+        ).matches;
+      }
+    };
+    updateDeviceModes();
+    window.addEventListener('resize', updateDeviceModes);
+    return () => window.removeEventListener('resize', updateDeviceModes);
   }, []);
+
+  const getShouldDisableTeleport = () => {
+    if (disableTeleportAnimationRef.current !== undefined) {
+      return Boolean(disableTeleportAnimationRef.current);
+    }
+    return isTabletRef.current;
+  };
 
   useEffect(() => {
     if (isPaused) {
@@ -606,6 +631,23 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         player.invincibleFrames--;
       }
 
+      const clampCameraPosition = () => {
+        const camera = cameraRef.current;
+        const zoomX = camera.zoomX;
+        const zoomY = camera.zoomY;
+        const visibleWidth = Math.min(MAZE_WORLD_SIZE, canvas.width / (2 * zoomX));
+        const visibleHeight = Math.min(MAZE_WORLD_SIZE, canvas.height / (2 * zoomY));
+        const minX = visibleWidth / 2;
+        const maxX = MAZE_WORLD_SIZE - minX;
+        const minY = visibleHeight / 2;
+        const maxY = MAZE_WORLD_SIZE - minY;
+
+        camera.x = minX < maxX ? Math.max(minX, Math.min(maxX, camera.x)) : MAZE_WORLD_SIZE / 2;
+        camera.y = minY < maxY ? Math.max(minY, Math.min(maxY, camera.y)) : MAZE_WORLD_SIZE / 2;
+      };
+
+      const shouldDisableTeleport = getShouldDisableTeleport();
+
       // Check if player has arrived at target tile
       if (player.x === targetPx && player.y === targetPy) {
         player.gridX = player.targetX;
@@ -624,6 +666,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           player.dir = steppedPortal.exitDir as any;
           player.nextDir = steppedPortal.exitDir as any;
           player.invincibleFrames = Math.max(player.invincibleFrames, 30);
+
+          if (shouldDisableTeleport) {
+            cameraRef.current.x = player.x;
+            cameraRef.current.y = player.y;
+            clampCameraPosition();
+          }
         }
 
         const desiredDir = getDesiredDirection();
@@ -666,17 +714,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       camera.x += (player.x - camera.x) * camLerp;
       camera.y += (player.y - camera.y) * camLerp;
 
-      const zoomX = camera.zoomX;
-      const zoomY = camera.zoomY;
-      const visibleWidth = Math.min(MAZE_WORLD_SIZE, canvas.width / (2 * zoomX));
-      const visibleHeight = Math.min(MAZE_WORLD_SIZE, canvas.height / (2 * zoomY));
-      const minX = visibleWidth / 2;
-      const maxX = MAZE_WORLD_SIZE - minX;
-      const minY = visibleHeight / 2;
-      const maxY = MAZE_WORLD_SIZE - minY;
-
-      camera.x = minX < maxX ? Math.max(minX, Math.min(maxX, camera.x)) : MAZE_WORLD_SIZE / 2;
-      camera.y = minY < maxY ? Math.max(minY, Math.min(maxY, camera.y)) : MAZE_WORLD_SIZE / 2;
+      clampCameraPosition();
 
       // Ghost Mode Timer (Scatter / Chase)
       const now = Date.now();
@@ -855,7 +893,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           lastRoomVisitedRef.current = { id: room.id, time: now };
 
           if (wordInRoom === correctWord) {
-            if (!celebrationRef.current) {
+            if (shouldDisableTeleport) {
+              gameAudio.playTeleport();
+              onCorrect();
+            } else if (!celebrationRef.current) {
               celebrationRef.current = { active: true, progress: 0 };
               gameAudio.playTeleport(); // Play some sound for success
             }
@@ -875,6 +916,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
             // Give some invincibility frames so they aren't instantly killed if a monster is at the center
             player.invincibleFrames = Math.max(player.invincibleFrames, 60);
+
+            if (shouldDisableTeleport) {
+              cameraRef.current.x = player.x;
+              cameraRef.current.y = player.y;
+              clampCameraPosition();
+            }
           }
         }
       });
@@ -915,6 +962,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       const halfVisibleWidth = visibleWorldWidth / 2;
       const halfVisibleHeight = visibleWorldHeight / 2;
       const isLowPowerDevice = lowPowerDeviceRef.current;
+      const shouldDisableTeleport = getShouldDisableTeleport();
 
       WARP_PORTALS.forEach((portal) => {
         const px = portal.x * cellSize + cellSize / 2;
@@ -937,6 +985,37 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           ctx.scale(1 / stretchRatio, 1);
         }
         ctx.translate(-px, -py);
+
+        if (shouldDisableTeleport) {
+          // Clean, static portal graphic for tablet / disabled animation mode
+          ctx.save();
+          ctx.fillStyle = '#050a1f';
+          ctx.beginPath();
+          ctx.arc(px, py, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = portal.color;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(px, py, radius - 1, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.7;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(px, py, radius * 0.55, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = portal.color;
+          ctx.beginPath();
+          ctx.arc(px, py, radius * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+          ctx.restore();
+          return;
+        }
 
         if (isLowPowerDevice) {
           // A single rotating arc preserves the portal cue without the expensive
@@ -1188,7 +1267,16 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     };
 
     const runFrame = () => {
+      const shouldDisableTeleport = getShouldDisableTeleport();
       if (celebrationRef.current) {
+        if (shouldDisableTeleport) {
+          celebrationRef.current = null;
+          const gameplayZoom = gameplayZoomRef.current;
+          cameraRef.current.zoomX = gameplayZoom.zoomX;
+          cameraRef.current.zoomY = gameplayZoom.zoomY;
+          onCorrect();
+          return;
+        }
         celebrationRef.current.progress++;
         const p = celebrationRef.current.progress;
         const maxFrames = 75; // 1.25 seconds of celebration zoom

@@ -15,6 +15,7 @@ interface GameScreenProps {
   onWrongAnswer: (word: string) => void;
   onLoseLife: () => void;
   onBackToWelcome: () => void;
+  disableTeleportAnimation?: boolean;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -26,6 +27,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onWrongAnswer,
   onLoseLife,
   onBackToWelcome,
+  disableTeleportAnimation,
 }) => {
   const currentQuestion = questions[currentQuestionIndex];
   const hasQuestionImage = Boolean(currentQuestion?.image);
@@ -281,6 +283,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             lives={lives}
             isPaused={Boolean(zoomedImage) || isTabHidden}
             externalDirection={extDir}
+            disableTeleportAnimation={disableTeleportAnimation}
           />
         </div>
 
