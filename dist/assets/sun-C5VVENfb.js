@@ -1,0 +1,1 @@
+var e=`/assets/sun-BtU8ifWF.webp`;export{e as default};

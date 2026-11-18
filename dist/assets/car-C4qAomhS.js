@@ -1,0 +1,1 @@
+var e=`/assets/car-BAdlSdNH.webp`;export{e as default};

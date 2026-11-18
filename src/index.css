@@ -165,7 +165,7 @@ body.game-active #root {
 }
 
 .maze-header__coins strong {
-  font: 900 clamp(1.25rem, 2.4vw, 2rem)/1 Lateef, sans-serif;
+  font: 900 clamp(1.25rem, 2.4vw, 2rem)/1 'Scheherazade New', serif;
 }
 
 .maze-header__question {
@@ -181,7 +181,7 @@ body.game-active #root {
 }
 
 .maze-header__question strong {
-  font: 900 clamp(1.45rem, 2.7vw, 2.2rem)/1.1 Lateef, sans-serif;
+  font: 900 clamp(1.45rem, 2.7vw, 2.2rem)/1.1 'Scheherazade New', serif;
 }
 
 .maze-header__exit {
@@ -305,7 +305,13 @@ body.game-active #root {
   cursor: pointer;
 }
 
+.game-screen,
+.game-screen * {
+  font-family: 'Scheherazade New', serif !important;
+}
+
 .question-text {
+  font-family: 'Scheherazade New', serif !important;
   width: 100%;
   max-height: 38%;
   overflow: hidden;
@@ -1121,7 +1127,7 @@ body.game-active #root {
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(8, 48, 70, .96), rgba(5, 30, 48, .94));
   box-shadow: 0 16px 40px rgba(0, 0, 0, .45), inset 0 0 18px rgba(0, 196, 230, .16);
-  font-family: 'Lateef', sans-serif;
+  font-family: 'Scheherazade New', serif;
   font-size: clamp(2.1rem, min(6vw, 6.4vh), 3.8rem);
   font-weight: 900;
   line-height: 1;

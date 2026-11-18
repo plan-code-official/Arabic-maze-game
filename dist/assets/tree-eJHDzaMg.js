@@ -1,0 +1,1 @@
+var e=`/assets/tree-CQncMbek.webp`;export{e as default};

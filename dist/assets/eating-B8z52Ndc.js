@@ -1,0 +1,1 @@
+var e=`/assets/eating-CdJiL6b6.webp`;export{e as default};

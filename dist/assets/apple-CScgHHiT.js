@@ -1,0 +1,1 @@
+var e=`/assets/apple-DvOqWLII.webp`;export{e as default};

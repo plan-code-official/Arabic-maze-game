@@ -1,0 +1,1 @@
+var e=`/assets/cat-BsTOprCj.webp`;export{e as default};

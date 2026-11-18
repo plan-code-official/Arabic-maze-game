@@ -3,7 +3,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { GameScreen } from './components/GameScreen';
 import { VictoryModal } from './components/VictoryModal';
 import { ErrorScreen } from './components/ErrorScreen';
-import { QUESTIONS, type Question } from './data/questions';
+import { loadDemoQuestions, type Question } from './data/questions';
 import { gameAudio } from './utils/audio';
 import { handleExitSite } from './utils/navigation';
 import celebrationRobots from './Celebration/assets/celbr.png';
@@ -50,31 +50,62 @@ function App() {
   // Session State
   const [sessionId, setSessionId] = useState<string | null>(null);
 
-  // Preload Celebration, Results Panel, and Question assets upfront
+  // Preload Celebration & Results Panel assets only after initial loading finishes (in idle time)
   useEffect(() => {
-    const assets = [
-      celebrationRobots,
-      panelArt,
-      celebrationTitle,
-      exitButtonImage,
-      retryButtonImage,
-    ];
-    assets.forEach((src) => {
-      if (src) {
-        const img = new Image();
-        img.src = src;
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (apiQuestions.length > 0) {
-      apiQuestions.forEach((q) => {
-        if (q.image) {
+    if (isLoading) return;
+    const preloadEndScreenAssets = () => {
+      const assets = [
+        celebrationRobots,
+        panelArt,
+        celebrationTitle,
+        exitButtonImage,
+        retryButtonImage,
+      ];
+      assets.forEach((src) => {
+        if (src) {
           const img = new Image();
-          img.src = q.image;
+          img.src = src;
         }
       });
+    };
+
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(preloadEndScreenAssets, { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
+    } else {
+      const timer = setTimeout(preloadEndScreenAssets, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  // Preload first 2 question images immediately, and remaining question images when idle
+  useEffect(() => {
+    if (apiQuestions.length === 0) return;
+
+    apiQuestions.slice(0, 2).forEach((q) => {
+      if (q.image) {
+        const img = new Image();
+        img.src = q.image;
+      }
+    });
+
+    if (apiQuestions.length > 2) {
+      const preloadRest = () => {
+        apiQuestions.slice(2).forEach((q) => {
+          if (q.image) {
+            const img = new Image();
+            img.src = q.image;
+          }
+        });
+      };
+
+      if ('requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(preloadRest, { timeout: 2500 });
+        return () => window.cancelIdleCallback(id);
+      } else {
+        const timer = setTimeout(preloadRest, 1200);
+        return () => clearTimeout(timer);
+      }
     }
   }, [apiQuestions]);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -183,7 +214,8 @@ function App() {
         }
 
         if (isDemo && !lessonId) {
-          setApiQuestions(QUESTIONS);
+          const demoQuestions = await loadDemoQuestions();
+          setApiQuestions(demoQuestions);
           setIsLoading(false);
           return;
         }

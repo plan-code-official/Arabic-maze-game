@@ -1,0 +1,1 @@
+var e=`/assets/swimming-CyOQK_-l.webp`;export{e as default};

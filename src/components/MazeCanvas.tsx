@@ -1121,14 +1121,14 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         }
         ctx.translate(-textX, -textY);
 
-        ctx.font = `bold ${fontSize}px FontGame`;
+        ctx.font = `bold ${fontSize}px "Scheherazade New", serif`;
         while (fontSize > 9 && ctx.measureText(answerText).width > maxTextWidth) {
           fontSize -= 1;
-          ctx.font = `bold ${fontSize}px FontGame`;
+          ctx.font = `bold ${fontSize}px "Scheherazade New", serif`;
         }
 
         ctx.fillStyle = '#000000';
-        ctx.font = `bold ${fontSize}px FontGame`;
+        ctx.font = `bold ${fontSize}px "Scheherazade New", serif`;
         ctx.fillText(answerText, textX + 1, textY + 1, maxTextWidth);
 
         ctx.fillStyle = '#ffffff';

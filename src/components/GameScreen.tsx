@@ -64,6 +64,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       el.style.setProperty('font-size', `${lo}px`, 'important');
     };
     fit();
+    void document.fonts?.ready.then(fit);
     const ro = new ResizeObserver(fit);
     if (el.parentElement) ro.observe(el.parentElement);
     window.addEventListener('resize', fit);
@@ -221,6 +222,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   ref={questionTextRef}
                   className="question-text text-white font-black text-center w-full relative z-10"
                   style={{
+                    fontFamily: "'Scheherazade New', serif",
                     overflowWrap: 'normal',
                     wordBreak: 'keep-all',
                     hyphens: 'none'
